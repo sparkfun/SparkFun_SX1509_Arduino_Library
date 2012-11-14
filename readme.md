@@ -8,5 +8,5 @@ Repository for SparkFun SX1509 I/O expander breakout Eagle files and an Arduino 
 *hardware*: This directory contains the Eagle design files.
 
 - Jim Lindblom
-SparkFun Electronics
-November 14, 2012
+<br>SparkFun Electronics
+<br>November 14, 2012
