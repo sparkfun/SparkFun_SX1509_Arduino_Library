@@ -10,28 +10,13 @@ sx1509Class::sx1509Class(byte address, byte resetPin, byte interruptPin, byte os
 	pinInterrupt = interruptPin;
 	pinOscillator = oscillatorPin;
 	pinReset = resetPin;
-	
-	if ((pinInterrupt == 255) || (pinInterrupt != 2) || (pinInterrupt != 3))
-		polling = 1;
-	else
-		polling = 0;
 }
 
 byte sx1509Class::init(void)
 {
-	// If we're not in polling mode, setup the interrupt pin as an input
-	if (!polling)
+	if (pinInterrupt != 255)
 	{
 		pinMode(pinInterrupt, INPUT_PULLUP);
-		if (pinInterrupt == 2)
-		{
-			attachInterrupt(0, &sx1509Class::interruptHandler, FALLING);
-		}
-		else if (pinInterrupt == 3)
-		{
-			attachInterrupt(1, &sx1509Class::interruptHandler, FALLING);			
-		}
-		interrupts();
 	}
 	
 	// Begin I2C
@@ -340,6 +325,148 @@ void sx1509Class::reset(bool hardware)
 	}
 }
 
+// debounceConfig(byte configValue)
+// 	This method configures the debounce time of every input.
+//	configValue should be a 3-bit value:
+//		000: 0.5ms * 2MHz/fOSC
+//		001: 1ms * 2MHz/fOSC
+//		010: 2ms * 2MHz/fOSC
+//		011: 4ms * 2MHz/fOSC
+//		100: 8ms * 2MHz/fOSC
+//		101: 16ms * 2MHz/fOSC
+//		110: 32ms * 2MHz/fOSC
+//		111: 64ms * 2MHz/fOSC
+void sx1509Class::debounceConfig(byte configValue)
+{
+	// First make sure clock is configured
+	byte tempByte = readByte(REG_MISC);
+	if ((tempByte & 0x70) == 0)
+	{
+		tempByte |= (1<<4);	// Just default to no divider if not set
+		writeByte(REG_MISC, tempByte);
+	}
+	tempByte = readByte(REG_CLOCK);
+	if ((tempByte & 0x60) == 0)
+	{
+		tempByte |= (1<<6);	// default to internal osc.
+		writeByte(REG_CLOCK, tempByte);
+	}
+	
+	configValue &= 0b111;	// 3-bit value
+	writeByte(REG_DEBOUNCE_CONFIG, configValue);
+}
+
+// debounceEnable(byte pin)
+//	This method enables debounce on a input pin on the SX1509.
+//	pin should be a value between 0 and 15.
+void sx1509Class::debounceEnable(byte pin)
+{
+	unsigned int debounceEnable = readWord(REG_DEBOUNCE_ENABLE_B);
+	debounceEnable |= (1<<pin);
+	writeWord(REG_DEBOUNCE_ENABLE_B, debounceEnable);
+}
+// interruptSource(void)
+//	Returns an unsigned int representing which pin caused an interrupt.
+//	Pins are represented by their bit position. So a return value of
+//		0x0104 would mean pins 8 and 3 (bits 8 and 3) have generated an interrupt
+//	This function also clears all interrupts
+unsigned int sx1509Class::interruptSource(void)
+{
+	unsigned int intSource = readWord(REG_INTERRUPT_SOURCE_B);
+	writeWord(REG_INTERRUPT_SOURCE_B, 0xFFFF);	// Clear interrupts
+	return intSource;
+}
+
+// enableInterrupt(byte pin, byte riseFall)
+//	This function sets up an interrupt on a pin. Parameters are:
+//	-pin: a value between 0 and 15. The pin you want an interrupt enabled on
+//	-riseFall: Configures if you want an interrupt generated on rise fall or both.
+// 		For this param, send the pin-change values previously defined by Arduino:
+//		#define CHANGE 1	<-Both
+//		#define FALLING 2	<- Falling
+//		#define RISING 3	<- Rising
+//	Note: This function does not set up a pin as an input, or configure
+//		its pull-up/down resistors! Do that before (or after).
+void sx1509Class::enableInterrupt(byte pin, byte riseFall)
+{
+	// Set REG_INTERRUPT_MASK
+	unsigned int tempWord = readWord(REG_INTERRUPT_MASK_B);
+	tempWord &= ~(1<<pin);	// 0 = event on IO will trigger interrupt
+	writeWord(REG_INTERRUPT_MASK_B, tempWord);
+	
+	byte sensitivity = 0;
+	switch (riseFall)
+	{
+	case CHANGE:
+		sensitivity = 0b11;
+		break;
+	case FALLING:
+		sensitivity = 0b10;
+		break;
+	case RISING:
+		sensitivity = 0b01;
+		break;
+	}
+	
+	// Set REG_SENSE_XXX
+	// Sensitivity is set as follows:
+	// 00: None
+	// 01: Rising
+	// 10: Falling
+	// 11: Both
+	byte pinMask = (pin & 0x07) * 2;
+	byte senseRegister;
+	
+	// Need to select between two words. One for bank A, one for B.
+	if (pin >= 8)	senseRegister = REG_SENSE_HIGH_B;
+	else			senseRegister = REG_SENSE_HIGH_A;
+	
+	tempWord = readWord(senseRegister);
+	tempWord &= ~(0b11<<pinMask);	// Mask out the bits we want to write
+	tempWord |= (sensitivity<<pinMask);	// Add our new bits
+	writeWord(senseRegister, tempWord);
+}
+
+// configClock(byte oscSource, byte oscPinFunction, byte oscFreqOut, byte oscDivider)
+// 	This function configures the oscillator source/speed and the 
+//		clock, which is used to drive LEDs and time debounces.
+//	Parameters to be sent are:
+//	- oscSource: Choose either internal 2MHz oscillator or an external signal applied to the OSCIO pin
+//		This value defaults to internal.
+//		INTERNAL_CLOCK and EXTERNAL_CLOCK are defined in the header file. Use those.
+//	- oscPinFunction: Allows you to set OSCIO as an input or output.
+//		This value defaults to input
+//		You can use Arduino's INPUT, OUTPUT defines for this value
+//	- oscFreqOut: If oscio is configured as an output, this will set the output frequency
+//		This value defaults to 0.
+//		This should be a 4-bit value. 0=0%, 0xF=100%, else fOSCOut = FOSC / (2^(RegClock[3:0]-1))
+//	- oscDivider: Sets the clock divider in REG_MISC.
+//		This value defaults to 1.
+//		ClkX = fOSC / (2^(RegMisc[6:4] -1))
+void sx1509Class::configClock(byte oscSource, byte oscPinFunction, byte oscFreqOut, byte oscDivider)
+{
+	// RegClock constructed as follows:
+	//	6:5 - Oscillator frequency souce
+	//		00: off, 01: external input, 10: internal 2MHz, 1: reserved
+	//	4 - OSCIO pin function
+	//		0: input, 1 ouptut
+	//	3:0 - Frequency of oscout pin
+	//		0: LOW, 0xF: high, else fOSCOUT = FoSC/(2^(RegClock[3:0]-1))
+	oscSource = (oscSource & 0b11)<<5;		// 2-bit value, bits 6:5
+	oscPinFunction = (oscPinFunction & 1)<<4;	// 1-bit value bit 4
+	oscFreqOut = (oscFreqOut & 0b1111);	// 4-bit value, bits 3:0
+	byte regClock = oscSource | oscPinFunction | oscFreqOut;
+	writeByte(REG_CLOCK, regClock);
+	
+	// Config RegMisc[6:4] with oscDivider
+	// 0: off, else ClkX = fOSC / (2^(RegMisc[6:4] -1))
+	oscDivider = (oscDivider & 0b111)<<4;	// 3-bit value, bits 6:4
+	byte regMisc = readByte(REG_MISC);
+	regMisc &= ~(0b111<<4);
+	regMisc |= oscDivider;
+	writeByte(REG_MISC, regMisc);
+}
+
 // readByte(byte registerAddress)
 //	This function reads a single byte located at the registerAddress register.
 //	- deviceAddress should already be set by the constructor.
@@ -465,8 +592,4 @@ void sx1509Class::writeBytes(byte firstRegisterAddress, byte * writeArray, byte 
 		Wire.write(writeArray[i]);
 	}
 	Wire.endTransmission();
-}
-
-void sx1509Class::interruptHandler(void)
-{
 }

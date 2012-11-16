@@ -9,6 +9,10 @@
 #define LINEAR		0	
 #define LOGARITHMIC	1
 
+// These are used for clock config:
+#define INTERNAL_CLOCK	2
+#define EXTERNAL_CLOCK	1
+	
 class sx1509Class
 {
 private:
@@ -18,13 +22,11 @@ private:
 	byte pinInterrupt;
 	byte pinOscillator;
 	byte pinReset;
-	// Private variables:
-	bool polling;
-	// Functions:
-	static void interruptHandler(void);
+	// Read Functions:
 	byte readByte(byte registerAddress);
 	unsigned int readWord(byte registerAddress);
 	void readBytes(byte firstRegisterAddress, byte * destination, byte length);
+	// Write functions:
 	void writeByte(byte registerAddress, byte writeValue);
 	void writeWord(byte registerAddress, unsigned int writeValue);
 	void writeBytes(byte firstRegisterAddress, byte * writeArray, byte length);
@@ -42,12 +44,13 @@ public:
 	void blink(byte pin, byte tOn, byte toff, 
 			   byte offIntensity = 0, byte onIntensity = 255,
 			   byte tRise = 0, byte tFall = 0);
-	// something with oscio, clock managment
-	// void debouncePin(byte pin);
-	// void debounceTime(byte time);
+	void enableInterrupt(byte pin, byte riseFall);
+	unsigned int interruptSource(void);
+	void configClock(byte oscSource = 2, byte oscPinFunction = 0, byte oscFreqOut = 0, byte oscDivider = 1);
+	void debounceEnable(byte pin);
+	void debounceConfig(byte configVaule);
 	// void keypad(byte rows, byte columns);
 	// void levelShifter();
-	// void oscio input/output, frequency
 };
 
 #endif

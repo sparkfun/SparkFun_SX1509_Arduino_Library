@@ -39,7 +39,7 @@
 #define 	REG_LED_DRIVER_ENABLE_B	0x20	//	RegLEDDriverEnableB LED driver enable register _ I/O[15_8] (Bank B) 0000 0000
 #define 	REG_LED_DRIVER_ENABLE_A	0x21	//	RegLEDDriverEnableA LED driver enable register _ I/O[7_0] (Bank A) 0000 0000
 // Debounce and Keypad Engine		
-#define 	REG_DEBOUCE_CONFIG		0x22	//	RegDebounceConfig Debounce configuration register 0000 0000
+#define 	REG_DEBOUNCE_CONFIG		0x22	//	RegDebounceConfig Debounce configuration register 0000 0000
 #define 	REG_DEBOUNCE_ENABLE_B	0x23	//	RegDebounceEnableB Debounce enable register _ I/O[15_8] (Bank B) 0000 0000
 #define 	REG_DEBOUNCE_ENABLE_A	0x24	//	RegDebounceEnableA Debounce enable register _ I/O[7_0] (Bank A) 0000 0000
 #define 	REG_KEY_CONFIG_1		0x25	//	RegKeyConfig1 Key scan configuration register 0000 0000
