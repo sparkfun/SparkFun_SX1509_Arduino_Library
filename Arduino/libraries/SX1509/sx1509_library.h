@@ -49,7 +49,8 @@ public:
 	void configClock(byte oscSource = 2, byte oscPinFunction = 0, byte oscFreqOut = 0, byte oscDivider = 1);
 	void debounceEnable(byte pin);
 	void debounceConfig(byte configVaule);
-	// void keypad(byte rows, byte columns);
+	void keypad(byte rows, byte columns, byte sleepTime = 0, byte scanTime = 0);
+	unsigned int readKeyData();
 	// void levelShifter();
 };
 

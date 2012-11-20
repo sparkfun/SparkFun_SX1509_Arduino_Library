@@ -26,6 +26,8 @@ interruptSource     KEYWORD2
 configClock         KEYWORD2
 debounceEnable      KEYWORD2
 debounceConfig      KEYWORD2
+keypad              KEYWORD2
+readKeyData         KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

@@ -264,6 +264,93 @@ void sx1509Class::ledDriverInit(byte pin, byte freq, bool log)
 	writeWord(REG_DATA_B, tempWord);
 }
 
+// readKeyData()
+//	This function returns a 16-bit value containing the values of
+//	RegKeyData1 and RegKeyData2. However the bit-values are all
+//	complemented, so there should only be a 1 where the active columns
+//	and rows are represented.
+unsigned int sx1509Class::readKeyData()
+{
+	return (0xFFFF ^ readWord(REG_KEY_DATA_1));
+}
+
+// keypad(byte rows, byte columns, byte sleepTime, byte scanTime)
+//	This function will initialize the keypad function on the SX1509.
+//	a rows x columns matrix of buttons will be created.
+//	- rows is the number of rows in the button matrix.
+//		- This value must be between 1 and 7. 0 will turn it off.
+//		- 1 = 2 rows, 7 = 8 rows, etc.
+//	- columns is the number of columns in the button matrix
+//		- This value should be between 0 and 7.
+//		- 0 = 1 column, 7 = 8 columns, etc.
+//	- sleepTime sets the Auto-sleep time of the keypad engine.
+//		- This value should be between 0 and 7. See the comments in the 
+//		  function for their values
+//	- scanTime sets the scan time per row.
+//		- This value should be betwee 0 and 7. See the comments for what 
+//        effect this value will have.
+void sx1509Class::keypad(byte rows, byte columns, byte sleepTime, byte scanTime)
+{
+	unsigned int tempWord;
+	byte tempByte;
+	
+	// Set regDir 0:7 outputs, 8:15 inputs:
+	tempWord = readWord(REG_DIR_B);
+	for (int i=0; i<rows; i++)
+		tempWord &= ~(1<<i);
+	for (int i=8; i<(columns * 2); i++)
+		tempWord |= (1<<i);
+	writeWord(REG_DIR_B, tempWord);
+	
+	// Set regOpenDrain on 0:7:
+	tempByte = readByte(REG_OPEN_DRAIN_A);
+	for (int i=0; i<rows; i++)
+		tempByte |= (1<<i);
+	writeByte(REG_OPEN_DRAIN_A, tempByte);
+	
+	// Set regPullUp on 8:15:
+	tempByte = readByte(REG_PULL_UP_B);
+	for (int i=0; i<columns; i++)
+		tempByte |= (1<<i);
+	writeByte(REG_PULL_UP_B, tempByte);
+	
+	// Enable and configure debouncing on 8:15:
+	tempByte = readByte(REG_DEBOUNCE_ENABLE_B);
+	for (int i=0; i<columns; i++)
+		tempByte |= (1<<i);
+	writeByte(REG_DEBOUNCE_ENABLE_B, tempByte);
+	writeByte(REG_DEBOUNCE_CONFIG, (scanTime & 0b111));	// Debounce must be less than scan time
+	
+	// RegKeyConfig1 sets the auto sleep time and scan time per row
+	// Auto sleep time: 3-bit value ~
+	//		000 : OFF
+	//		001 : 128ms x 2MHz/fOSC
+	//		010 : 256ms x 2MHz/fOSC
+	//		011 : 512ms x 2MHz/fOSC
+	//		100 : 1sec x 2MHz/fOSC
+	//		101 : 2sec x 2MHz/fOSC
+	//		110 : 4sec x 2MHz/fOSC
+	//		111 : 8sec x 2MHz/fOSC
+	// Scan time per row: 3-bit value, must be set above debounce time ~
+	//		000 : 1ms x 2MHz/fOSC
+	//		001 : 2ms x 2MHz/fOSC
+	//		010 : 4ms x 2MHz/fOSC
+	//		011 : 8ms x 2MHz/fOSC
+	//		100 : 16ms x 2MHz/fOSC
+	//		101 : 32ms x 2MHz/fOSC
+	//		110 : 64ms x 2MHz/fOSC
+	//		111 : 128ms x 2MHz/fOSC
+	sleepTime = (sleepTime & 0b111)<<4;	
+	scanTime &= 0b111;	// Scan time is bits 2:0
+	tempByte = sleepTime | scanTime;
+	writeByte(REG_KEY_CONFIG_1, tempByte);
+	
+	// RegKeyConfig2 tells the SX1509 how many rows and columns we've got going
+	rows = (rows - 1) & 0b111;	// 0 = off, 0b001 = 2 rows, 0b111 = 8 rows, etc.
+	columns = (columns - 1) & 0b111;	// 0b000 = 1 column, ob111 = 8 columns, etc.
+	writeByte(REG_KEY_CONFIG_2, (rows << 3) | columns);
+}
+
 // sync(void)
 //	This function resets the PWM/Blink/Fade counters, syncing any blinking LEDs
 // 	Two functions are performed:
