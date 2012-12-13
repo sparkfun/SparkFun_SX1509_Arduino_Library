@@ -68,30 +68,34 @@ const byte resetPin = 8;
 // Or make an sx1509 object with just the SX1509 I2C address:
 sx1509Class sx1509(SX1509_ADDRESS);
 
+// SX1509 pin defintions:
+const byte buttonPin = 1;
+const byte ledPin = 14;
+
 void setup()
 {
   Serial.begin(9600);
   sx1509.init();  // Initialize the SX1509, does Wire.begin()
-  sx1509.pinDir(1, INPUT);  // Set SX1509 pin 1 as an input
-  sx1509.writePin(1, HIGH);  // Activate pull-up
-  sx1509.pinDir(14, OUTPUT);  // Set SX1509 pin 14 as an output
+  sx1509.pinDir(buttonPin, INPUT);  // Set SX1509 pin 1 as an input
+  sx1509.writePin(buttonPin, HIGH);  // Activate pull-up
+  sx1509.pinDir(ledPin, OUTPUT);  // Set SX1509 pin 14 as an output
   
   // Blink pin 14 a few times
   for (int i=0; i<5; i++)
   {
-    sx1509.writePin(14, LOW);  // Write pin LOW
+    sx1509.writePin(ledPin, LOW);  // Write pin LOW
     delay(100);
-    sx1509.writePin(14, HIGH);  // Write pin HIGH
+    sx1509.writePin(ledPin, HIGH);  // Write pin HIGH
     delay(100);
   }
 }
 
 void loop()
 {
-  int buttonValue = sx1509.readPin(1);  // read pin 1 status
+  int buttonValue = sx1509.readPin(buttonPin);  // read pin 1 status
   
   if (buttonValue == 1)  // by default pin 14 should be high
-    sx1509.writePin(14, LOW);  // turn pin off
+    sx1509.writePin(ledPin, LOW);  // turn pin off
   else
-    sx1509.writePin(14, HIGH);  // turn pin on
+    sx1509.writePin(ledPin, HIGH);  // turn pin on
 }

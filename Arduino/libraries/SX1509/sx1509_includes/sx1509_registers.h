@@ -1,7 +1,14 @@
-/* SX1509_registers.h
+/* 
+	sx1509_registers.h
+		Register definitions for SX1509.
+	
 	by: Jim Lindblom
-	SparkFun Electronics
-	November 13, 2012
+		SparkFun Electronics
+	date: December 13, 2012
+	
+	license: Beerware. Feel free to use it, with or without attribution, in
+		your own projects. If you find it helpful, buy me a beer next time you
+		see me at the local pub.
 */
 
 #define 	REG_INPUT_DISABLE_B		0x00	//	RegInputDisableB Input buffer disable register _ I/O[15_8] (Bank B) 0000 0000

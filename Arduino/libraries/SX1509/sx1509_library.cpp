@@ -1,3 +1,28 @@
+/* 
+	sx1509_library.cpp
+		Code file for the SX1509 Arduino library.
+	
+	by: Jim Lindblom
+		SparkFun Electronics
+	date: December 13, 2012
+	
+	license: Beerware. Feel free to use it, with or without attribution, in
+		your own projects. If you find it helpful, buy me a beer next time you
+		see me at the local pub.
+	
+	In here you'll find the Arduino code used to interface with the SX1509 I2C
+	16 I/O expander. There are functions to take advantage of everything the
+	SX1509 provides - input/output setting, writing pins high/low, reading 
+	the input value of pins, LED driver utilities (blink, breath, pwm), and
+	keypad engine utilites.
+	
+	See the header file (sx1509_library.h) for detailed descriptions of each of 
+	the sx1509Class methods.
+	
+	For example uses of these functions, see the Arduino example codes in the
+	./examples/ folder.
+*/
+
 #include <Wire.h>
 #include "Arduino.h"
 #include "sx1509_library.h"
@@ -39,13 +64,33 @@ byte sx1509Class::init(void)
 		return 0;
 }
 
-// pinDir(byte pin, byte inOut)
-//	This function sets one of the SX1509's 16 outputs to either an INPUT or OUTPUT
-//	- pin should be a value between 0 and 15
-//	- The Arduino INPUT and OUTPUT constants should be used for the inOut parameter.
-//		- Even though the ATmega and SX1509 binary values for input and output are not equivalent
-//		  We'll handle the 1/0 switching in this function
-//	- No return value
+void sx1509Class::reset(bool hardware)
+{
+	// if hardware bool is set
+	if (hardware)
+	{
+		// Check if bit 2 of REG_MISC is set
+		// if so nReset will not issue a POR, we'll need to clear that bit first
+		byte regMisc = readByte(REG_MISC);
+		if (regMisc & (1<<2))
+		{
+			regMisc &= ~(1<<2);
+			writeByte(REG_MISC, regMisc);
+		}
+		// Reset the SX1509, the pin is active low
+		pinMode(pinReset, OUTPUT);	// set reset pin as output
+		digitalWrite(pinReset, LOW);	// pull reset pin low
+		delay(1);	// Wait for the pin to settle
+		digitalWrite(pinReset, HIGH);	// pull reset pin back high
+	}
+	else
+	{
+		// Software reset command sequence:
+		writeByte(REG_RESET, 0x12);
+		writeByte(REG_RESET, 0x34);
+	}
+}
+
 void sx1509Class::pinDir(byte pin, byte inOut)
 {
 	unsigned int tempRegDir = readWord(REG_DIR_B);
@@ -59,12 +104,6 @@ void sx1509Class::pinDir(byte pin, byte inOut)
 	writeWord(REG_DIR_B, tempRegDir);
 }
 
-// writePin(byte pin, byte highLow)
-//	This function writes a pin to either high or low if it's configured as an output
-//	If the pin is configured as an input, this method will activate either the pull-up
-//	or pull-down resistor (HIGH or LOW respectively).
-//	- pin should be a value between 0 and 15
-//	- highLow should be Arduino's defined HIGH or LOW constants
 void sx1509Class::writePin(byte pin, byte highLow)
 {
 	unsigned int tempRegDir = readWord(REG_DIR_B);
@@ -98,112 +137,20 @@ void sx1509Class::writePin(byte pin, byte highLow)
 	}
 }
 
-// readPin(byte pin, byte highLow)
-//	This function writes a pin to either high or low.
-//	- pin should be a value between 0 and 15
-//	- This function returns a 1 if HIGH, 0 if LOW
 byte sx1509Class::readPin(byte pin)
 {
 	unsigned int tempRegDir = readWord(REG_DIR_B);
 	
-	if (tempRegDir&(1<<pin))	// If the pin is an input
+	if (tempRegDir & (1<<pin))	// If the pin is an input
 	{
 		unsigned int tempRegData = readWord(REG_DATA_B);
-		if (tempRegData&(1<<pin))
+		if (tempRegData & (1<<pin))
 			return 1;
 	}
 	
 	return 0;
 }
 
-// pwm(byte pin, byte iOn)
-//	This function can be used to control the intensity of an output pin.
-//	- pin is the pin to be blinked. Should be 0-15.
-//	- iOn should be a 0-255 value setting the intensity of the LED
-//		- 0 is completely off, 255 is 100% on.
-// ledDriverInit should be called on the pin before calling this function.
-void sx1509Class::pwm(byte pin, byte iOn)
-{
-	// Write the on intensity of pin
-	// Linear mode: Ion = iOn
-	// Log mode: Ion = f(iOn)
-	writeByte(REG_I_ON[pin], iOn);
-}
-
-// blink(byte pin, byte tOn, byte tOff, byte offIntensity, byte tRise, byte tFall)
-//	blink performs both the blink and breath functions.
-//  - pin: the pin (0-15) you want to set blinking/breathing.
-//	- tOn: the amount of time the pin is HIGH
-//		- This value should be between 1 and 31. 0 is off.
-//	- tOff: the amount of time the pin is at offIntensity
-//		- This value should be between 1 and 31. 0 is off.
-//	- offIntensity: How dim the LED is during the off period.
-//		- This value should be between 0 and 7. 0 is completely off.
-//	- onIntensity: How bright the LED will be when completely on.
-//		- This value can be between 0 (0%) and 255 (100%).
-//	- tRise: This sets the time the LED takes to fade in.
-//		- This value should be between 1 and 31. 0 is off.
-//		- This value is used with tFall to make the LED breath.
-//	- tFall: This sets the time the LED takes to fade out.
-//		- This value should be between 1 and 31. 0 is off.
-//  Note: The breathable pins are 4, 5, 6, 7, 12, 13, 14, 15 only. If tRise and tFall
-//		are set on 0-3 or 8-11 those pins will still only blink.
-// 	ledDriverInit should be called on the pin to be blinked before this.
-void sx1509Class::blink(byte pin, byte tOn, byte tOff, 
-						byte offIntensity, byte onIntensity,
-						byte tRise, byte tFall)
-{
-	// Keep parameters within their limits:
-	tOn &= 0x1F;	// tOn should be a 5-bit value
-	tOff &= 0x1F;	// tOff should be a 5-bit value
-	offIntensity &= 0x07;
-	// Write the time on
-	// 1-15:  TON = 64 * tOn * (255/ClkX)
-	// 16-31: TON = 512 * tOn * (255/ClkX)
-	writeByte(REG_T_ON[pin], tOn);
-	
-	
-	// Write the time/intensity off register
-	// 1-15:  TOFF = 64 * tOff * (255/ClkX)
-	// 16-31: TOFF = 512 * tOff * (255/ClkX)
-	// linear Mode - IOff = 4 * offIntensity
-	// log mode - Ioff = f(4 * offIntensity)
-	writeByte(REG_OFF[pin], (tOff<<3) | offIntensity);
-	
-	// Write the on intensity:
-	writeByte(REG_I_ON[pin], onIntensity);
-	
-	// Prepare tRise and tFall
-	tRise &= 0x1F;	// tRise is a 5-bit value
-	tFall &= 0x1F;	// tFall is a 5-bit value
-	
-	
-	// Write regTRise
-	// 0: Off
-	// 1-15:  TRise =      (regIOn - (4 * offIntensity)) * tRise * (255/ClkX)
-	// 16-31: TRise = 16 * (regIOn - (4 * offIntensity)) * tRise * (255/ClkX)
-	if (REG_T_RISE[pin] != 0xFF)
-		writeByte(REG_T_RISE[pin], tRise);
-	// Write regTFall
-	// 0: off
-	// 1-15:  TFall =      (regIOn - (4 * offIntensity)) * tFall * (255/ClkX)
-	// 16-31: TFall = 16 * (regIOn - (4 * offIntensity)) * tFall * (255/ClkX)
-	if (REG_T_FALL[pin] != 0xFF)
-		writeByte(REG_T_FALL[pin], tFall);
-}
-
-// ledDriverInit(byte pin, byte freq, bool log)
-//	This function initializes LED driving on a pin. It must be called
-//	if you want to use the pwm or blink functions on that pin.
-//	- pin should be a pin number between 0 and 15
-// 	- freq decides ClkX, and should be a value between 1-7
-//		- ClkX = 2MHz / (2^(freq - 1)
-//		- freq defaults to 1, which makes ClkX = 2MHz
-//	- log selects either linear or logarithmic mode on the LED drivers
-//		- log defaults to 0, linear mode
-//		- currently log sets both bank A and B to the same mode
-//	Note: this function automatically decides to use the internal 2MHz
-//		oscillator.
 void sx1509Class::ledDriverInit(byte pin, byte freq, bool log)
 {
 	unsigned int tempWord;
@@ -264,31 +211,57 @@ void sx1509Class::ledDriverInit(byte pin, byte freq, bool log)
 	writeWord(REG_DATA_B, tempWord);
 }
 
-// readKeyData()
-//	This function returns a 16-bit value containing the values of
-//	RegKeyData1 and RegKeyData2. However the bit-values are all
-//	complemented, so there should only be a 1 where the active columns
-//	and rows are represented.
-unsigned int sx1509Class::readKeyData()
+void sx1509Class::pwm(byte pin, byte iOn)
 {
-	return (0xFFFF ^ readWord(REG_KEY_DATA_1));
+	// Write the on intensity of pin
+	// Linear mode: Ion = iOn
+	// Log mode: Ion = f(iOn)
+	writeByte(REG_I_ON[pin], iOn);
 }
 
-// keypad(byte rows, byte columns, byte sleepTime, byte scanTime)
-//	This function will initialize the keypad function on the SX1509.
-//	a rows x columns matrix of buttons will be created.
-//	- rows is the number of rows in the button matrix.
-//		- This value must be between 1 and 7. 0 will turn it off.
-//		- 1 = 2 rows, 7 = 8 rows, etc.
-//	- columns is the number of columns in the button matrix
-//		- This value should be between 0 and 7.
-//		- 0 = 1 column, 7 = 8 columns, etc.
-//	- sleepTime sets the Auto-sleep time of the keypad engine.
-//		- This value should be between 0 and 7. See the comments in the 
-//		  function for their values
-//	- scanTime sets the scan time per row.
-//		- This value should be betwee 0 and 7. See the comments for what 
-//        effect this value will have.
+void sx1509Class::blink(byte pin, byte tOn, byte tOff, 
+						byte offIntensity, byte onIntensity,
+						byte tRise, byte tFall)
+{
+	// Keep parameters within their limits:
+	tOn &= 0x1F;	// tOn should be a 5-bit value
+	tOff &= 0x1F;	// tOff should be a 5-bit value
+	offIntensity &= 0x07;
+	// Write the time on
+	// 1-15:  TON = 64 * tOn * (255/ClkX)
+	// 16-31: TON = 512 * tOn * (255/ClkX)
+	writeByte(REG_T_ON[pin], tOn);
+	
+	
+	// Write the time/intensity off register
+	// 1-15:  TOFF = 64 * tOff * (255/ClkX)
+	// 16-31: TOFF = 512 * tOff * (255/ClkX)
+	// linear Mode - IOff = 4 * offIntensity
+	// log mode - Ioff = f(4 * offIntensity)
+	writeByte(REG_OFF[pin], (tOff<<3) | offIntensity);
+	
+	// Write the on intensity:
+	writeByte(REG_I_ON[pin], onIntensity);
+	
+	// Prepare tRise and tFall
+	tRise &= 0x1F;	// tRise is a 5-bit value
+	tFall &= 0x1F;	// tFall is a 5-bit value
+	
+	
+	// Write regTRise
+	// 0: Off
+	// 1-15:  TRise =      (regIOn - (4 * offIntensity)) * tRise * (255/ClkX)
+	// 16-31: TRise = 16 * (regIOn - (4 * offIntensity)) * tRise * (255/ClkX)
+	if (REG_T_RISE[pin] != 0xFF)
+		writeByte(REG_T_RISE[pin], tRise);
+	// Write regTFall
+	// 0: off
+	// 1-15:  TFall =      (regIOn - (4 * offIntensity)) * tFall * (255/ClkX)
+	// 16-31: TFall = 16 * (regIOn - (4 * offIntensity)) * tFall * (255/ClkX)
+	if (REG_T_FALL[pin] != 0xFF)
+		writeByte(REG_T_FALL[pin], tFall);
+}
+
 void sx1509Class::keypad(byte rows, byte columns, byte sleepTime, byte scanTime)
 {
 	unsigned int tempWord;
@@ -322,24 +295,6 @@ void sx1509Class::keypad(byte rows, byte columns, byte sleepTime, byte scanTime)
 	writeByte(REG_DEBOUNCE_CONFIG, (scanTime & 0b111));	// Debounce must be less than scan time
 	
 	// RegKeyConfig1 sets the auto sleep time and scan time per row
-	// Auto sleep time: 3-bit value ~
-	//		000 : OFF
-	//		001 : 128ms x 2MHz/fOSC
-	//		010 : 256ms x 2MHz/fOSC
-	//		011 : 512ms x 2MHz/fOSC
-	//		100 : 1sec x 2MHz/fOSC
-	//		101 : 2sec x 2MHz/fOSC
-	//		110 : 4sec x 2MHz/fOSC
-	//		111 : 8sec x 2MHz/fOSC
-	// Scan time per row: 3-bit value, must be set above debounce time ~
-	//		000 : 1ms x 2MHz/fOSC
-	//		001 : 2ms x 2MHz/fOSC
-	//		010 : 4ms x 2MHz/fOSC
-	//		011 : 8ms x 2MHz/fOSC
-	//		100 : 16ms x 2MHz/fOSC
-	//		101 : 32ms x 2MHz/fOSC
-	//		110 : 64ms x 2MHz/fOSC
-	//		111 : 128ms x 2MHz/fOSC
 	sleepTime = (sleepTime & 0b111)<<4;	
 	scanTime &= 0b111;	// Scan time is bits 2:0
 	tempByte = sleepTime | scanTime;
@@ -351,12 +306,11 @@ void sx1509Class::keypad(byte rows, byte columns, byte sleepTime, byte scanTime)
 	writeByte(REG_KEY_CONFIG_2, (rows << 3) | columns);
 }
 
-// sync(void)
-//	This function resets the PWM/Blink/Fade counters, syncing any blinking LEDs
-// 	Two functions are performed:
-//		1) Bit 2 of REG_MISC is set, which alters the functionality of the nReset pin
-//		2) The nReset pin is toggled low->high, which should reset all LED counters
-//		3) Bit 2 of REG_MISC is again cleared, returning nReset to POR functionality
+unsigned int sx1509Class::readKeyData()
+{
+	return (0xFFFF ^ readWord(REG_KEY_DATA_1));
+}
+
 void sx1509Class::sync(void)
 {
 	// First check if nReset functionality is set
@@ -377,52 +331,6 @@ void sx1509Class::sync(void)
 	writeByte(REG_MISC, (regMisc & ~(1<<2)));
 }
 
-// nReset(bool hardware)
-//	This function resets the SX1509
-// 	Two reset methods are available: hardware and software.
-//	A hardware reset (hardware parameter = 1) pulls the reset line low, 
-//		pausing, then pulling the reset line high.
-//	A software reset writes a 0x12 then 0x34 to the REG_RESET as outlined
-// 		in the datasheet.
-//	No return value.
-void sx1509Class::reset(bool hardware)
-{
-	// if hardware bool is set
-	if (hardware)
-	{
-		// Check if bit 2 of REG_MISC is set
-		// if so nReset will not issue a POR, we'll need to clear that bit first
-		byte regMisc = readByte(REG_MISC);
-		if (regMisc & (1<<2))
-		{
-			regMisc &= ~(1<<2);
-			writeByte(REG_MISC, regMisc);
-		}
-		// Reset the SX1509, the pin is active low
-		pinMode(pinReset, OUTPUT);	// set reset pin as output
-		digitalWrite(pinReset, LOW);	// pull reset pin low
-		delay(1);	// Wait for the pin to settle
-		digitalWrite(pinReset, HIGH);	// pull reset pin back high
-	}
-	else
-	{
-		// Software reset command sequence:
-		writeByte(REG_RESET, 0x12);
-		writeByte(REG_RESET, 0x34);
-	}
-}
-
-// debounceConfig(byte configValue)
-// 	This method configures the debounce time of every input.
-//	configValue should be a 3-bit value:
-//		000: 0.5ms * 2MHz/fOSC
-//		001: 1ms * 2MHz/fOSC
-//		010: 2ms * 2MHz/fOSC
-//		011: 4ms * 2MHz/fOSC
-//		100: 8ms * 2MHz/fOSC
-//		101: 16ms * 2MHz/fOSC
-//		110: 32ms * 2MHz/fOSC
-//		111: 64ms * 2MHz/fOSC
 void sx1509Class::debounceConfig(byte configValue)
 {
 	// First make sure clock is configured
@@ -443,37 +351,13 @@ void sx1509Class::debounceConfig(byte configValue)
 	writeByte(REG_DEBOUNCE_CONFIG, configValue);
 }
 
-// debounceEnable(byte pin)
-//	This method enables debounce on a input pin on the SX1509.
-//	pin should be a value between 0 and 15.
 void sx1509Class::debounceEnable(byte pin)
 {
 	unsigned int debounceEnable = readWord(REG_DEBOUNCE_ENABLE_B);
 	debounceEnable |= (1<<pin);
 	writeWord(REG_DEBOUNCE_ENABLE_B, debounceEnable);
 }
-// interruptSource(void)
-//	Returns an unsigned int representing which pin caused an interrupt.
-//	Pins are represented by their bit position. So a return value of
-//		0x0104 would mean pins 8 and 3 (bits 8 and 3) have generated an interrupt
-//	This function also clears all interrupts
-unsigned int sx1509Class::interruptSource(void)
-{
-	unsigned int intSource = readWord(REG_INTERRUPT_SOURCE_B);
-	writeWord(REG_INTERRUPT_SOURCE_B, 0xFFFF);	// Clear interrupts
-	return intSource;
-}
 
-// enableInterrupt(byte pin, byte riseFall)
-//	This function sets up an interrupt on a pin. Parameters are:
-//	-pin: a value between 0 and 15. The pin you want an interrupt enabled on
-//	-riseFall: Configures if you want an interrupt generated on rise fall or both.
-// 		For this param, send the pin-change values previously defined by Arduino:
-//		#define CHANGE 1	<-Both
-//		#define FALLING 2	<- Falling
-//		#define RISING 3	<- Rising
-//	Note: This function does not set up a pin as an input, or configure
-//		its pull-up/down resistors! Do that before (or after).
 void sx1509Class::enableInterrupt(byte pin, byte riseFall)
 {
 	// Set REG_INTERRUPT_MASK
@@ -514,22 +398,13 @@ void sx1509Class::enableInterrupt(byte pin, byte riseFall)
 	writeWord(senseRegister, tempWord);
 }
 
-// configClock(byte oscSource, byte oscPinFunction, byte oscFreqOut, byte oscDivider)
-// 	This function configures the oscillator source/speed and the 
-//		clock, which is used to drive LEDs and time debounces.
-//	Parameters to be sent are:
-//	- oscSource: Choose either internal 2MHz oscillator or an external signal applied to the OSCIO pin
-//		This value defaults to internal.
-//		INTERNAL_CLOCK and EXTERNAL_CLOCK are defined in the header file. Use those.
-//	- oscPinFunction: Allows you to set OSCIO as an input or output.
-//		This value defaults to input
-//		You can use Arduino's INPUT, OUTPUT defines for this value
-//	- oscFreqOut: If oscio is configured as an output, this will set the output frequency
-//		This value defaults to 0.
-//		This should be a 4-bit value. 0=0%, 0xF=100%, else fOSCOut = FOSC / (2^(RegClock[3:0]-1))
-//	- oscDivider: Sets the clock divider in REG_MISC.
-//		This value defaults to 1.
-//		ClkX = fOSC / (2^(RegMisc[6:4] -1))
+unsigned int sx1509Class::interruptSource(void)
+{
+	unsigned int intSource = readWord(REG_INTERRUPT_SOURCE_B);
+	writeWord(REG_INTERRUPT_SOURCE_B, 0xFFFF);	// Clear interrupts
+	return intSource;
+}
+
 void sx1509Class::configClock(byte oscSource, byte oscPinFunction, byte oscFreqOut, byte oscDivider)
 {
 	// RegClock constructed as follows:
