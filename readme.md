@@ -1,5 +1,7 @@
 This is a repository for the SparkFun SX1509 I/O Expander Breakout **Eagle files** and an **Arduino Library**.
 
+<div align="center"><a href="https://www.sparkfun.com/products/11502"><img src="https://dlnmh9ip6v2uc.cloudfront.net/images/products/1/1/5/0/2/11502-03_medium.jpg"></a></div>
+
 ---
 
 # SX1509 16-I/O Expander
