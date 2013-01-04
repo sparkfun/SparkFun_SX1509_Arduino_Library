@@ -5,7 +5,7 @@ These files were created with Eagle 6.2.0, you'll need Eagle 6.0 or later to ope
 
 # Board Features
 
-It's just a breakout board for the SX1509, but it does have it's fair share of shortcuts.
+It's just a breakout board for the SX1509, but it does have its fair share of shortcuts.
 
 ## Jumpers
 
