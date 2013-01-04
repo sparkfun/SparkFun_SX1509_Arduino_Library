@@ -59,7 +59,8 @@ These functions work much like the Arduino *digitalWrite* and *pinMode* function
 
 For an example sketch using these functions, check out the [sx1509_digitalReadWrite example](https://github.com/sparkfun/SX1509_IO-Expander/tree/master/Arduino/libraries/SX1509/examples/sx1509_digitalReadWrite).
 
-**pinDir(byte pin, byte inOut)**: Pin direction (INPUT/OUTPUT) control
+### pinDir(byte pin, byte inOut)
+Pin direction (INPUT/OUTPUT) control
 
 Input:
 
@@ -70,7 +71,8 @@ Examples:<br>
 `` sx1509.pinDir(1, INPUT);  // Set SX1509 pin 1 as an input ``<br>
 `` sx1509.pinDir(15, OUTPUT); // Set SX1509 pin 15 as an output``
 
-**writePin(byte pin, byte highLow)**: Writes a pin to either high or low if it's configured as an OUTPUT. If the pin is configured as an INPUT, this method will activate either the PULL-UP	or PULL-DOWN resistor (HIGH or LOW respectively).
+### writePin(byte pin, byte highLow)
+Writes a pin to either high or low if it's configured as an OUTPUT. If the pin is configured as an INPUT, this method will activate either the PULL-UP	or PULL-DOWN resistor (HIGH or LOW respectively).
 
 Input:
 
@@ -81,7 +83,8 @@ Examples:<br>
 ``sx1509.writePin(1, HIGH);  // If pin 1 is an INPUT, this activates a pull-up resistor ``<br>
 ``sx1509.writePin(15, LOW);  // If pin 15 is an OUTPUT, this writes the pin LOW``
 
-**readPin(byte pin)**: Reads the digital value (HIGH/LOW) of a pin. The pin should be configured as an INPUT.
+### readPin(byte pin)
+Reads the digital value (HIGH/LOW) of a pin. The pin should be configured as an INPUT.
 
 Input:
 
@@ -102,7 +105,8 @@ For an example sketch using these functions, check out the [sx1509_ledDriver exa
 
 Here's the functions available to do some LED driving:
 
-**ledDriverInit(byte pin, byte freq, bool log)**: Initializes LED driving on a pin. This function must be called if you want to use the pwm or blink functions on that pin.
+### ledDriverInit(byte pin, byte freq, bool log)
+Initializes LED driving on a pin. This function must be called if you want to use the pwm or blink functions on that pin.
 
 Inputs:
 
@@ -121,7 +125,8 @@ Examples:<br>
 ``sx1509.ledDriverInit(14); // Enables LED driving on pin 14, defaults to no clock divider and linear intensity.``
 
 
-**pwm(byte pin, byte iOn)**: This function can be used to control the intensity of an output pin connected to an LED.
+### pwm(byte pin, byte iOn)
+This function can be used to control the intensity of an output pin connected to an LED.
 
 Inputs:
 
@@ -133,7 +138,8 @@ Example:<br>
 ``sx1509.pwm(0, 127); // Sets LED on pin 0 to medium intensity ``<br>
 ``sx1509.pwm(14, 255); // Sets LED on pin 14 to 100% on``
 
-**blink(byte pin, byte tOn, byte tOff, byte offIntensity, byte tRise, byte tFall)**: Controls both the **blink and breathe** functionality on LED pins.
+### blink(byte pin, byte tOn, byte tOff, byte offIntensity, byte tRise, byte tFall)
+Controls both the **blink and breathe** functionality on LED pins.
 
 Input:
 
@@ -168,7 +174,8 @@ For an example sketch using the keypad functions check out the [sx1509_keypad](h
 
 There are two functions used by the keypad engine - one to initialize the keypad, and one to read it.
 
-**keypad(byte rows, byte columns, byte sleepTime, byte scanTime)**: Initializes the keypad function on the SX1509.
+### keypad(byte rows, byte columns, byte sleepTime, byte scanTime)
+Initializes the keypad function on the SX1509.
 
 Inputs:
 
@@ -203,7 +210,8 @@ Examples:<br>
 ``sx1509.keypad(7, 7); // Creates an 8x8 keypad. 64 keys! Fastest scan time.``<br>
 ``sx1509.keypad(3, 2, 3, 2); // 4 row, 3 column keypad keypad - 12 keys. Sleep about half a second, 4ms scan time.``
 
-**readKeyData()**: Returns a 16-bit value containing the status of the keypad engine.
+### readKeyData()
+Returns a 16-bit value containing the status of the keypad engine.
 
 Output: A 16-bit value is returned. The lower 8 bits represent the up-to 8 rows, while the MSB represents the up-to 8 columns. Bit-values of 1 indicate a button in that row or column is being pressed. As such, at least two bits should be set.
 
@@ -221,7 +229,8 @@ Want to make use of the SX1509's interrupt output? Want an interrupt generated w
 
 For an example sketch using the SX1509's interrupt functionality check out the [sx1509_interruptDebounce example](https://github.com/sparkfun/SX1509_IO-Expander/tree/master/Arduino/libraries/SX1509/examples/sx1509_interruptDebounce).
 
-**enableInterrupt(byte pin, byte riseFall)**: This function sets up an interrupt on a pin. Interrupts can occur on all SX1509 pins, and can be generated on rising, falling, or both.
+### enableInterrupt(byte pin, byte riseFall)
+This function sets up an interrupt on a pin. Interrupts can occur on all SX1509 pins, and can be generated on rising, falling, or both.
 
 Inputs:
 
@@ -233,7 +242,8 @@ Inputs:
 
 This function does not set up a pin as an input, or configure its pull-up/down resistors!
 
-**interruptSource(void)**: Returns an unsigned int representing which pin caused an interrupt.
+### interruptSource(void)
+Returns an unsigned int representing which pin caused an interrupt.
 
 Output: 16-bit value, with a single bit set representing the pin(s) that generated an interrupt. E.g. a return value of	0x0104 would mean pins 8 and 3 (bits 8 and 3) have generated an interrupt.
 
@@ -245,7 +255,8 @@ Getting some jitter in the SX1509 inputs? Need to add debounce to your keypad sc
 
 For an example sketch using the SX1509's debounce functionality check out the [sx1509_interruptDebounce example](https://github.com/sparkfun/SX1509_IO-Expander/tree/master/Arduino/libraries/SX1509/examples/sx1509_interruptDebounce).
 
-**debounceConfig(byte configValue)**: This method configures the debounce time of every input.
+### debounceConfig(byte configValue)
+This method configures the debounce time of every input.
 
 Input: 
 
@@ -261,7 +272,8 @@ Input:
 
 fOSC is set with the configClock function. It defaults to 2MHz.
 
-**debounceEnable(byte pin)**: This method enables debounce on SX1509 input pin.
+### debounceEnable(byte pin)
+This method enables debounce on SX1509 input pin.
 
 Input: 
 
@@ -275,13 +287,15 @@ Need to **reset** the SX1509 (hardware or software)? Want to **configure the clo
 
 These functions are all interspersed through many of the library examples sketches.
 
-**reset(bool hardware)**: This function resets the SX1509 - either a hardware reset or software. A hardware reset (hardware parameter = 1) pulls the reset line low, pausing, then pulling the reset line high. A software reset writes a 0x12 then 0x34 to the REG_RESET as outlined in the datasheet.
+### reset(bool hardware)
+This function resets the SX1509 - either a hardware reset or software. A hardware reset (hardware parameter = 1) pulls the reset line low, pausing, then pulling the reset line high. A software reset writes a 0x12 then 0x34 to the REG_RESET as outlined in the datasheet.
 
 Input:
 
 * *hardware*: 0 executes a software reset, 1 executes a hardware reset.
 
-**configClock(byte oscSource, byte oscPinFunction, byte oscFreqOut, byte oscDivider)**: This function configures the oscillator source/speed and the clock, which is used to drive LEDs and time debounces.
+### configClock(byte oscSource, byte oscPinFunction, byte oscFreqOut, byte oscDivider)
+This function configures the oscillator source/speed and the clock, which is used to drive LEDs and time debounces.
 
 Inputs:
 
@@ -298,7 +312,8 @@ Inputs:
 	* ClkX = fOSC / (2^(RegMisc[6:4] -1))
 	* This value defaults to 1.
 
-**sync()**: Resets the PWM/Blink/Fade counters, syncing any blinking LEDs. Bit 2 of REG_MISC is set, which alters the functionality of the nReset pin. The nReset pin is toggled low->high, which should reset all LED counters. Bit 2 of REG_MISC is again cleared, returning nReset pin to POR functionality.
+### sync()
+Resets the PWM/Blink/Fade counters, syncing any blinking LEDs. Bit 2 of REG_MISC is set, which alters the functionality of the nReset pin. The nReset pin is toggled low->high, which should reset all LED counters. Bit 2 of REG_MISC is again cleared, returning nReset pin to POR functionality.
 
 No inputs or outputs. Just does.
 
