@@ -17,7 +17,7 @@ All jumpers are set to a default value with a small, exposed trace between the p
 
 In the case of the address jumper, if you cut the trace, you'll need to apply a bubble of solder jumping the middle pad to **one** of the other two edge pads to set the ADDR pins.
 
-**Address Jumpers**
+### Address Jumpers
 
 These two jumper select the I<sup>2</sup>C address of the SX1509. These jumpers allow you to select the value of the **SX1509's ADDR0 and ADDR1** pins - either VCC (1) or GND (0).
 
@@ -33,7 +33,7 @@ A table of possible values is printed on the PCB, but I'll stick it here too.
 <tr align="center"><td>1</td><td>1</td><td>0x71</td></tr>
 </table>
 
-**I/O Rail Jumpers**
+### I/O Rail Jumpers
 
 If you're looking to take advantage of the SX1509's level-shifting functionality, you may want to use the VCC1 and VCC2 pins. These pins can supply the voltage for I/O pins 0-7 and 8-15 respectively.
 
@@ -41,7 +41,7 @@ If you're looking to take advantage of the SX1509's level-shifting functionality
 
 These jumpers **default to closed**, which means both I/O rails are tied to the supply voltage (usually 3.3V).
 
-**Pull-up Resistor Jumpers**
+### Pull-up Resistor Jumpers
 
 The SX1509 Breakout comes with 10k resistors to pull-up the I<sup>2</sup>C lines - SDA and SCL. This jumper ties both of those resistors to VCC.
 
