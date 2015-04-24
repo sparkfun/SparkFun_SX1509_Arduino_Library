@@ -25,7 +25,7 @@ Documentation
 Products that use this Library
 ---------------------------------
 
-* [BOB-11502](https://www.sparkfun.com/products/retired/11502)- Basic part and short description here
+* [BOB-11502](https://www.sparkfun.com/products/retired/11502)- 16 I/O I2C port expander.
 
 Version History
 ---------------
