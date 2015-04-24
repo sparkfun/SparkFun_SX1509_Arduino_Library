@@ -30,8 +30,7 @@ Products that use this Library
 Version History
 ---------------
 
-* [vExxFxxZxxHxxLxxSxx](URL for tag specific to this version) - Description
-* [vEyyFyyZyyHyyLyySyy](URL for tag specific to this version) - Description
+* [TODO]() - Description
 
 License Information
 -------------------
