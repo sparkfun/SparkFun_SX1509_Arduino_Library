@@ -1,33 +1,47 @@
-SX1509 16 Output I/O Expander Breakout
-======================================
+SparkFun SX1509 IO Expander Breakout Arduino Library
+========================================
 
-[![SX1509 16 Output I/O Expander Breakout](https://dlnmh9ip6v2uc.cloudfront.net/images/products/1/1/5/0/2/11502-01_medium.jpg)  
-*SX1509 16 Output I/O Expander Breakout (BOB-11502)*](https://www.sparkfun.com/products/11502)
+![SparkFun SX1509 IO Expander Breakout](https://cdn.sparkfun.com//assets/parts/7/4/0/1/11502-01.jpg)
 
-The SX1509 16 Output I/O Expander Breakout Board makes it easy to prototype using the SX1509 so you can add more I/O onto your Arduino or I/O limited controller. It can leverage your I2C interface for 16 extra channels of GPIO and contains a fully programmable LED driver and a keypad scanning engine which enables continuous keypad monitoring of up to 64 keys. Since the I/O banks can operate between 1.2V and 3.6V (5.5V tolerant) independent of both the core and each other, this device can also work as a level-shifter.
+[*SparkFun SX1509 IO Expander Breakout (SKU)*](https://www.sparkfun.com/products/retired/11502)
 
-Features include:
-
-* 16 channels of bi-directional I/O - Pull-up/down resistors, push/pull or open-drain outputs, programmable polarity.
-* 5.5V tolerant I/O's (1.2-3.6V operating voltage)
-* LED Driver: PWM and blink control on all I/O's, breathe capability on a select few.
-* Level shifting I/O's: Independent I/O rails (VCC1, VCC2) allow for up/down level shifting.
-* Keypad scanning engine: Supports up to 64 keys (in an 8x8 matrix configuration).
+Arduino library for the SX1509 16-I/O expander.
 
 Repository Contents
 -------------------
 
-* **/Arduino** - This directory contains the Arduino library. This directory's structure follows that of your standard Arduino sketchbook installation. A *libraries* folder within contains the **SX1509 library**.
+* **/examples** - Example sketches for the library (.ino). Run these from the Arduino IDE.
+* **/extras** - Additional documentation for the user. These files are ignored by the IDE.
+* **/src** - Source files for the library (.cpp, .h).
+* **keywords.txt** - Keywords from this library that will be highlighted in the Arduino IDE.
+* **library.properties** - General library properties for the Arduino package manager.
 
-* **/hardware** - This directory contains the Eagle design files - the breakout PCB and schematic design. These files were created with version 6.2.0 of Eagle Cad - a lite version is available, for free, at [www.cadsoftusa.com](http://www.cadsoftusa.com).
+Documentation
+--------------
+
+* **[Installing an Arduino Library Guide](https://learn.sparkfun.com/tutorials/installing-an-arduino-library)** - Basic information on how to install an Arduino library.
+* **[Product Repository](https://github.com/sparkfun/SX1509_IO-Expander)** - Main repository (including hardware files) for the SX1509 IO Expander Breakout.
+
+Products that use this Library
+---------------------------------
+
+* [BOB-11502](https://www.sparkfun.com/products/retired/11502)- Basic part and short description here
+
+Version History
+---------------
+
+* [vExxFxxZxxHxxLxxSxx](URL for tag specific to this version) - Description
+* [vEyyFyyZyyHyyLyySyy](URL for tag specific to this version) - Description
 
 License Information
 -------------------
 
-The hardware is released under [Creative Commons Share-alike 3.0](http://creativecommons.org/licenses/by-sa/3.0/).  
-All other code is open source hardware so please feel free to do anything you want with it; you buy me a beer if you use this and we meet someday ([Beerware license](http://en.wikipedia.org/wiki/Beerware)).
+This product is _**open source**_!
 
-Author
-------
+The **code** is beerware; if you see me (or any other SparkFun employee) at the local, and you've found our code helpful, please buy us a round!
 
-Jim Lindblom, SparkFun Electronics
+Please use, reuse, and modify these files as you see fit. Please maintain attribution to SparkFun Electronics and release anything derivative under the same license.
+
+Distributed as-is; no warranty is given.
+
+- Your friends at SparkFun.
