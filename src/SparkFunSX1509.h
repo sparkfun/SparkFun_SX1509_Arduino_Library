@@ -25,8 +25,8 @@
 
 #include "Arduino.h"
 
-#ifndef sx1509_library_H
-#define sx1509_library_H
+#ifndef SparkFunSX1509_H
+#define SparkFunSX1509_H
 
 #define RECEIVE_TIMEOUT_VALUE 1000	// Timeout for I2C receive
 

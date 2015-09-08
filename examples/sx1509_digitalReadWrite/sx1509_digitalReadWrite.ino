@@ -49,7 +49,7 @@
 */
 
 #include <Wire.h>  // Wire.h library is required to use SX1509 lib
-#include <sx1509_library.h>  // Include the SX1509 library
+#include <SparkFunSX1509.h>  // Include the SX1509 library
 
 // Uncomment one of the four lines to match your SX1509's address
 //  pin selects. SX1509 breakout defaults to [0:0] (0x3E).

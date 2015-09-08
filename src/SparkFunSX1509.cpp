@@ -25,8 +25,8 @@
 
 #include <Wire.h>
 #include "Arduino.h"
-#include "sx1509_library.h"
-#include "sx1509_includes/sx1509_registers.h"
+#include "SparkFunSX1509.h"
+#include "util/sx1509_registers.h"
 
 sx1509Class::sx1509Class(byte address, byte resetPin, byte interruptPin, byte oscillatorPin)
 {
