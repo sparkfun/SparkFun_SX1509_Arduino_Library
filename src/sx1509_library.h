@@ -148,7 +148,7 @@ public:
 //			- currently log sets both bank A and B to the same mode
 //	Note: this function automatically decides to use the internal 2MHz osc.
 // -----------------------------------------------------------------------------
-	void ledDriverInit(byte pin, byte freq = 1, bool log = 0);
+	void ledDriverInit(byte pin, byte freq = 1, bool log = false, bool sink = false);
 	
 // -----------------------------------------------------------------------------
 // pwm(byte pin, byte iOn):	This function can be used to control the intensity 

@@ -151,7 +151,7 @@ byte sx1509Class::readPin(byte pin)
 	return 0;
 }
 
-void sx1509Class::ledDriverInit(byte pin, byte freq, bool log)
+void sx1509Class::ledDriverInit(byte pin, byte freq, bool log, bool sink)
 {
 	unsigned int tempWord;
 	byte tempByte;
@@ -167,11 +167,14 @@ void sx1509Class::ledDriverInit(byte pin, byte freq, bool log)
 	tempWord &= ~(1<<pin);
 	writeWord(REG_PULL_UP_B, tempWord);
 	
-	// Enable open-drain
-	// Writing a 1 to the pin bit will enable open drain on that pin
-	tempWord = readWord(REG_OPEN_DRAIN_B);
-	tempWord |= (1<<pin);
-	writeWord(REG_OPEN_DRAIN_B, tempWord);
+	if (sink)
+	{
+		// Enable open-drain
+		// Writing a 1 to the pin bit will enable open drain on that pin
+		tempWord = readWord(REG_OPEN_DRAIN_B);
+		tempWord |= (1<<pin);
+		writeWord(REG_OPEN_DRAIN_B, tempWord);
+	}
 	
 	// Set direction to output (REG_DIR_B)
 	pinDir(pin, OUTPUT);
