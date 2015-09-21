@@ -1,15 +1,26 @@
-/* 
-	sx1509_registers.h
-		Register definitions for SX1509.
-	
-	by: Jim Lindblom
-		SparkFun Electronics
-	date: December 13, 2012
-	
-	license: Beerware. Feel free to use it, with or without attribution, in
-		your own projects. If you find it helpful, buy me a beer next time you
-		see me at the local pub.
-*/
+/******************************************************************************
+sx1509_registers.h
+Register definitions for SX1509.
+Jim Lindblom @ SparkFun Electronics
+Original Creation Date: September 21, 2015
+https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library
+
+Here you'll find the Arduino code used to interface with the SX1509 I2C
+16 I/O expander. There are functions to take advantage of everything the
+SX1509 provides - input/output setting, writing pins high/low, reading 
+the input value of pins, LED driver utilities (blink, breath, pwm), and
+keypad engine utilites.
+
+Development environment specifics:
+	IDE: Arduino 1.6.5
+	Hardware Platform: Arduino Uno
+	SX1509 Breakout Version: v2.0
+
+This code is beerware; if you see me (or any other SparkFun employee) at the
+local, and you've found our code helpful, please buy us a round!
+
+Distributed as-is; no warranty is given.
+******************************************************************************/
 
 #define 	REG_INPUT_DISABLE_B		0x00	//	RegInputDisableB Input buffer disable register _ I/O[15_8] (Bank B) 0000 0000
 #define 	REG_INPUT_DISABLE_A		0x01	//	RegInputDisableA Input buffer disable register _ I/O[7_0] (Bank A) 0000 0000
