@@ -32,7 +32,7 @@ Products that use this Library
 Version History
 ---------------
 
-* [V_2.0.0](https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library/tree/V_2.0.0) - Version 2.0.0. More user-friendly function calls. Increased clock functionality. More examples.
+* [V_2.0.1](https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library/tree/V_2.0.1) - Version 2.0.1. More user-friendly function calls. Increased clock functionality. More examples. Mostly backwards compatible with older versions.
 * [V_1.0.0](https://github.com/sparkfun/SparkFun_SX1509_Arduino_Library/tree/V_1.0.0) - Version 1.0.0
 
 License Information
