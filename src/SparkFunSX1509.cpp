@@ -689,12 +689,6 @@ byte SX1509::readByte(byte registerAddress)
 	Wire.endTransmission();
 	Wire.requestFrom(deviceAddress, (byte) 1);
 
-	while ((Wire.available() < 1) && (timeout != 0))
-		timeout--;
-		
-	if (timeout == 0)
-		return 0;
-
 	readValue = Wire.read();
 
 	return readValue;
@@ -715,12 +709,6 @@ unsigned int SX1509::readWord(byte registerAddress)
 	Wire.write(registerAddress);
 	Wire.endTransmission();
 	Wire.requestFrom(deviceAddress, (byte) 2);
-
-	while ((Wire.available() < 2) && (timeout != 0))
-		timeout--;
-		
-	if (timeout == 0)
-		return 0;
 	
 	msb = (Wire.read() & 0x00FF) << 8;
 	lsb = (Wire.read() & 0x00FF);
@@ -741,9 +729,6 @@ void SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte lengt
 	Wire.write(firstRegisterAddress);
 	Wire.endTransmission();
 	Wire.requestFrom(deviceAddress, length);
-	
-	while (Wire.available() < length)
-		;
 	
 	for (int i=0; i<length; i++)
 	{
