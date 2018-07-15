@@ -52,6 +52,6 @@ SOFTWARE_RESET	LITERAL1
 HARDWARE_RESET	LITERAL1
 
 #######################################
-# Blue Constants (LITERAL2, constants, RESERVED_WORD_2)
+# Blue Constants (LITERAL2, Constants, RESERVED_WORD_2)
 #######################################
-ANALOG_OUTPUT	LITERAL2	constants	RESERVED_WORD_2
+ANALOG_OUTPUT	LITERAL2	Constants	RESERVED_WORD_2
