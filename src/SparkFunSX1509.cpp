@@ -737,8 +737,6 @@ unsigned int SX1509::readWord(byte registerAddress)
 //	- No return value.
 void SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte length)
 {
-	byte readValue;
-
 	Wire.beginTransmission(deviceAddress);
 	Wire.write(firstRegisterAddress);
 	Wire.endTransmission();
