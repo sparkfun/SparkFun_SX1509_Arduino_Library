@@ -47,6 +47,7 @@ class SX1509
 private:	// These private functions are not available to Arduino sketches.
 			// If you need to read or write directly to registers, consider
 			// putting the writeByte, readByte functions in the public section
+	TwoWire *_i2cPort;
 	byte deviceAddress; // I2C Address of SX1509
 // Pin definitions:
 	byte pinInterrupt;
@@ -82,7 +83,7 @@ public:
 
 // -----------------------------------------------------------------------------
 // begin(byte address, byte resetPin): This function initializes the SX1509.
-//  	It begins the Wire library, resets the IC, and tries to read some 
+//  	It requires wire to already be begun (previous versions did not do this), resets the IC, and tries to read some 
 //  	registers to prove it's connected.
 // Inputs:
 //		- address: should be the 7-bit address of the SX1509. This should be  
@@ -93,7 +94,8 @@ public:
 //		 software reset the SX1509.
 // Output: Returns a 1 if communication is successful, 0 on error.
 // -----------------------------------------------------------------------------
-	byte begin(byte address = 0x3E, byte resetPin = 0xFF);
+	// byte begin(byte address = 0x3E, byte resetPin = 0xFF);
+	byte begin(TwoWire &wirePort = Wire, byte address = 0x3E, byte resetPin = 0xFF);
 	byte init(void); // Legacy -- use begin now
 	
 // -----------------------------------------------------------------------------

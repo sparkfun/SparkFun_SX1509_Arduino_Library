@@ -41,9 +41,11 @@ SX1509::SX1509(byte address, byte resetPin, byte interruptPin, byte oscillatorPi
 	pinReset = resetPin;
 }
 
-byte SX1509::begin(byte address, byte resetPin)
+// byte SX1509::begin(byte address, byte resetPin)
+byte SX1509::begin(TwoWire &wirePort, byte address, byte resetPin)
 {
 	// Store the received parameters into member variables
+	_i2cPort = &wirePort;
 	deviceAddress =  address;
 	pinReset = resetPin;
 	
@@ -52,8 +54,8 @@ byte SX1509::begin(byte address, byte resetPin)
 
 byte SX1509::init(void)
 {
-	// Begin I2C
-	Wire.begin();
+	// Begin I2C should be done externally, before beginning SX1509
+	//Wire.begin();
 	
 	// If the reset pin is connected
 	if (pinReset != 255)
@@ -684,18 +686,18 @@ byte SX1509::readByte(byte registerAddress)
 	byte readValue;
 	unsigned int timeout = RECEIVE_TIMEOUT_VALUE;
 
-	Wire.beginTransmission(deviceAddress);
-	Wire.write(registerAddress);
-	Wire.endTransmission();
-	Wire.requestFrom(deviceAddress, (byte) 1);
+	_i2cPort->beginTransmission(deviceAddress);
+	_i2cPort->write(registerAddress);
+	_i2cPort->endTransmission();
+	_i2cPort->requestFrom(deviceAddress, (byte) 1);
 
-	while ((Wire.available() < 1) && (timeout != 0))
+	while ((_i2cPort->available() < 1) && (timeout != 0))
 		timeout--;
 		
 	if (timeout == 0)
 		return 0;
 
-	readValue = Wire.read();
+	readValue = _i2cPort->read();
 
 	return readValue;
 }
@@ -711,19 +713,19 @@ unsigned int SX1509::readWord(byte registerAddress)
 	unsigned int msb, lsb;
 	unsigned int timeout = RECEIVE_TIMEOUT_VALUE * 2;
 
-	Wire.beginTransmission(deviceAddress);
-	Wire.write(registerAddress);
-	Wire.endTransmission();
-	Wire.requestFrom(deviceAddress, (byte) 2);
+	_i2cPort->beginTransmission(deviceAddress);
+	_i2cPort->write(registerAddress);
+	_i2cPort->endTransmission();
+	_i2cPort->requestFrom(deviceAddress, (byte) 2);
 
-	while ((Wire.available() < 2) && (timeout != 0))
+	while ((_i2cPort->available() < 2) && (timeout != 0))
 		timeout--;
 		
 	if (timeout == 0)
 		return 0;
 	
-	msb = (Wire.read() & 0x00FF) << 8;
-	lsb = (Wire.read() & 0x00FF);
+	msb = (_i2cPort->read() & 0x00FF) << 8;
+	lsb = (_i2cPort->read() & 0x00FF);
 	readValue = msb | lsb;
 
 	return readValue;
@@ -739,17 +741,17 @@ void SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte lengt
 {
 	byte readValue;
 
-	Wire.beginTransmission(deviceAddress);
-	Wire.write(firstRegisterAddress);
-	Wire.endTransmission();
-	Wire.requestFrom(deviceAddress, length);
+	_i2cPort->beginTransmission(deviceAddress);
+	_i2cPort->write(firstRegisterAddress);
+	_i2cPort->endTransmission();
+	_i2cPort->requestFrom(deviceAddress, length);
 	
-	while (Wire.available() < length)
+	while (_i2cPort->available() < length)
 		;
 	
 	for (int i=0; i<length; i++)
 	{
-		destination[i] = Wire.read();
+		destination[i] = _i2cPort->read();
 	}
 }
 
@@ -760,10 +762,10 @@ void SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte lengt
 //	- No return value.
 void SX1509::writeByte(byte registerAddress, byte writeValue)
 {
-	Wire.beginTransmission(deviceAddress);
-	Wire.write(registerAddress);
-	Wire.write(writeValue);
-	Wire.endTransmission();
+	_i2cPort->beginTransmission(deviceAddress);
+	_i2cPort->write(registerAddress);
+	_i2cPort->write(writeValue);
+	_i2cPort->endTransmission();
 }
 
 // writeWord(byte registerAddress, ungisnged int writeValue)
@@ -776,11 +778,11 @@ void SX1509::writeWord(byte registerAddress, unsigned int writeValue)
 	byte msb, lsb;
 	msb = ((writeValue & 0xFF00) >> 8);
 	lsb = (writeValue & 0x00FF);
-	Wire.beginTransmission(deviceAddress);
-	Wire.write(registerAddress);
-	Wire.write(msb);
-	Wire.write(lsb);
-	Wire.endTransmission();	
+	_i2cPort->beginTransmission(deviceAddress);
+	_i2cPort->write(registerAddress);
+	_i2cPort->write(msb);
+	_i2cPort->write(lsb);
+	_i2cPort->endTransmission();	
 }
 
 // writeBytes(byte firstRegisterAddress, byte * writeArray, byte length)
@@ -792,11 +794,11 @@ void SX1509::writeWord(byte registerAddress, unsigned int writeValue)
 //	- no return value.
 void SX1509::writeBytes(byte firstRegisterAddress, byte * writeArray, byte length)
 {
-	Wire.beginTransmission(deviceAddress);
-	Wire.write(firstRegisterAddress);
+	_i2cPort->beginTransmission(deviceAddress);
+	_i2cPort->write(firstRegisterAddress);
 	for (int i=0; i<length; i++)
 	{
-		Wire.write(writeArray[i]);
+		_i2cPort->write(writeArray[i]);
 	}
-	Wire.endTransmission();
+	_i2cPort->endTransmission();
 }
