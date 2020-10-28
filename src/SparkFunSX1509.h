@@ -117,8 +117,8 @@ public:
 //	 	- inOut: The Arduino INPUT and OUTPUT constants should be used for the 
 //		 inOut parameter. They do what they say!
 // -----------------------------------------------------------------------------
-	void pinMode(byte pin, byte inOut);
-	void pinDir(byte pin, byte inOut); // Legacy - use pinMode
+	void pinMode(byte pin, byte inOut, byte initialLevel = HIGH);
+	void pinDir(byte pin, byte inOut, byte initialLevel = HIGH); // Legacy - use pinMode
 	
 // -----------------------------------------------------------------------------
 // digitalWrite(byte pin, byte highLow): This function writes a pin to either high 

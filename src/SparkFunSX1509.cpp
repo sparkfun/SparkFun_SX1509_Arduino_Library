@@ -105,16 +105,22 @@ void SX1509::reset(bool hardware)
 	}
 }
 
-void SX1509::pinDir(byte pin, byte inOut)
+void SX1509::pinDir(byte pin, byte inOut, byte initialLevel)
 {
 	// The SX1509 RegDir registers: REG_DIR_B, REG_DIR_A
 	//	0: IO is configured as an output
 	//	1: IO is configured as an input
 	byte modeBit;
-	if ((inOut == OUTPUT) || (inOut == ANALOG_OUTPUT))
-		modeBit = 0;
-	else
+	if ((inOut == OUTPUT) || (inOut == ANALOG_OUTPUT)) {
+		unsigned int tempRegData = readWord(REG_DATA_B);
+    if (initialLevel == LOW) {
+      tempRegData &= ~(1<<pin);
+	  	writeWord(REG_DATA_B, tempRegData);
+    }
+    modeBit = 0;
+  } else {
 		modeBit = 1;
+  }
 	
 	unsigned int tempRegDir = readWord(REG_DIR_B);
 	if (modeBit)	
@@ -134,9 +140,9 @@ void SX1509::pinDir(byte pin, byte inOut)
 	}
 }
 
-void SX1509::pinMode(byte pin, byte inOut)
+void SX1509::pinMode(byte pin, byte inOut, byte initialLevel)
 {
-	pinDir(pin, inOut);
+	pinDir(pin, inOut, initialLevel);
 }
 
 void SX1509::writePin(byte pin, byte highLow)
@@ -737,8 +743,6 @@ unsigned int SX1509::readWord(byte registerAddress)
 //	- No return value.
 void SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte length)
 {
-	byte readValue;
-
 	Wire.beginTransmission(deviceAddress);
 	Wire.write(firstRegisterAddress);
 	Wire.endTransmission();
