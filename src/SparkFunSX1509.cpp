@@ -145,8 +145,9 @@ void SX1509::pinMode(byte pin, byte inOut, byte initialLevel)
 	pinDir(pin, inOut, initialLevel);
 }
 
-void SX1509::writePin(byte pin, byte highLow)
+bool SX1509::writePin(byte pin, byte highLow)
 {
+  
 	unsigned int tempRegDir = readWord(REG_DIR_B);
 	
 	if ((0xFFFF^tempRegDir)&(1<<pin))	// If the pin is an output, write high/low
@@ -154,7 +155,7 @@ void SX1509::writePin(byte pin, byte highLow)
 		unsigned int tempRegData = readWord(REG_DATA_B);
 		if (highLow)	tempRegData |= (1<<pin);
 		else			tempRegData &= ~(1<<pin);
-		writeWord(REG_DATA_B, tempRegData);
+		return writeWord(REG_DATA_B, tempRegData);
 	}
 	else	// Otherwise the pin is an input, pull-up/down
 	{
@@ -165,22 +166,20 @@ void SX1509::writePin(byte pin, byte highLow)
 		{
 			tempPullUp |= (1<<pin);
 			tempPullDown &= ~(1<<pin);
-			writeWord(REG_PULL_UP_B, tempPullUp);
-			writeWord(REG_PULL_DOWN_B, tempPullDown);
+			return writeWord(REG_PULL_UP_B, tempPullUp) && writeWord(REG_PULL_DOWN_B, tempPullDown);
 		}
 		else	// If LOW do pull-down, disable pull-up
 		{
 			tempPullDown |= (1<<pin);
 			tempPullUp &= ~(1<<pin);
-			writeWord(REG_PULL_UP_B, tempPullUp);
-			writeWord(REG_PULL_DOWN_B, tempPullDown);
+			return writeWord(REG_PULL_UP_B, tempPullUp) && writeWord(REG_PULL_DOWN_B, tempPullDown);
 		}
 	}
 }
 
-void SX1509::digitalWrite(byte pin, byte highLow)
+bool SX1509::digitalWrite(byte pin, byte highLow)
 {
-	writePin(pin, highLow);
+	return writePin(pin, highLow);
 }
 
 byte SX1509::readPin(byte pin)
@@ -192,7 +191,9 @@ byte SX1509::readPin(byte pin)
 		unsigned int tempRegData = readWord(REG_DATA_B);
 		if (tempRegData & (1<<pin))
 			return 1;
-	}
+	} else {
+    // log_d("Pin %d not INPUT, REG_DIR_B: %d", pin, tempRegDir);
+  }
 	
 	return 0;
 }
@@ -761,30 +762,29 @@ void SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte lengt
 //	This function writes a single byte to a single register on the SX509.
 //	- writeValue is written to registerAddress
 //	- deviceAddres should already be set from the constructor
-//	- No return value.
-void SX1509::writeByte(byte registerAddress, byte writeValue)
+//	- Return value: true if succeeded, false if failed
+bool SX1509::writeByte(byte registerAddress, byte writeValue)
 {
 	Wire.beginTransmission(deviceAddress);
-	Wire.write(registerAddress);
-	Wire.write(writeValue);
-	Wire.endTransmission();
+  bool result = Wire.write(registerAddress) && Wire.write(writeValue);
+	Wire.endTransmission();	
+  return result;
 }
 
 // writeWord(byte registerAddress, ungisnged int writeValue)
 //	This function writes a two-byte word to registerAddress and registerAddress + 1
 //	- the upper byte of writeValue is written to registerAddress
 //		- the lower byte of writeValue is written to registerAddress + 1
-//	- No return value.
-void SX1509::writeWord(byte registerAddress, unsigned int writeValue)
+//	- Return value: true if succeeded, false if failed
+bool SX1509::writeWord(byte registerAddress, unsigned int writeValue)
 {
 	byte msb, lsb;
 	msb = ((writeValue & 0xFF00) >> 8);
 	lsb = (writeValue & 0x00FF);
 	Wire.beginTransmission(deviceAddress);
-	Wire.write(registerAddress);
-	Wire.write(msb);
-	Wire.write(lsb);
+  bool result = Wire.write(registerAddress) && Wire.write(msb) && Wire.write(lsb);
 	Wire.endTransmission();	
+  return result;
 }
 
 // writeBytes(byte firstRegisterAddress, byte * writeArray, byte length)
@@ -793,14 +793,15 @@ void SX1509::writeWord(byte registerAddress, unsigned int writeValue)
 //		- All writes following will be at incremental register addresses.
 //	- writeArray should be an array of byte values to be written.
 //	- length should be the number of bytes to be written.
-//	- no return value.
-void SX1509::writeBytes(byte firstRegisterAddress, byte * writeArray, byte length)
+//	- Return value: true if succeeded, false if failed
+bool SX1509::writeBytes(byte firstRegisterAddress, byte * writeArray, byte length)
 {
 	Wire.beginTransmission(deviceAddress);
-	Wire.write(firstRegisterAddress);
-	for (int i=0; i<length; i++)
-	{
-		Wire.write(writeArray[i]);
-	}
+  bool result = Wire.write(firstRegisterAddress);
+  int i = 0;
+  while (result && i < length) {
+    result = Wire.write(writeArray[i++]);
+  }
 	Wire.endTransmission();
+  return result;
 }

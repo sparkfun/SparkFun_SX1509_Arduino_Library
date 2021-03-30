@@ -58,10 +58,10 @@ private:	// These private functions are not available to Arduino sketches.
 	byte readByte(byte registerAddress);
 	unsigned int readWord(byte registerAddress);
 	void readBytes(byte firstRegisterAddress, byte * destination, byte length);
-// Write functions:
-	void writeByte(byte registerAddress, byte writeValue);
-	void writeWord(byte registerAddress, unsigned int writeValue);
-	void writeBytes(byte firstRegisterAddress, byte * writeArray, byte length);
+// Write functions, returning success or failure:
+	bool writeByte(byte registerAddress, byte writeValue);
+	bool writeWord(byte registerAddress, unsigned int writeValue);
+	bool writeBytes(byte firstRegisterAddress, byte * writeArray, byte length);
 // Helper functions:
 	// calculateLEDTRegister - Try to estimate an LED on/off duration register, 
 	// given the number of milliseconds and LED clock frequency.
@@ -130,8 +130,8 @@ public:
 //		- pin: The SX1509 pin number. Should be a value between 0 and 15.
 //		- highLow: should be Arduino's defined HIGH or LOW constants.
 // -----------------------------------------------------------------------------
-	void digitalWrite(byte pin, byte highLow); 
-	void writePin(byte pin, byte highLow); // Legacy - use digitalWrite
+	bool digitalWrite(byte pin, byte highLow); 
+	bool writePin(byte pin, byte highLow); // Legacy - use digitalWrite
 
 // -----------------------------------------------------------------------------
 // digitalRead(byte pin): This function reads the HIGH/LOW status of a pin.
