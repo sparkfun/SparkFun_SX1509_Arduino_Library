@@ -56,11 +56,16 @@ private:	// These private functions are not available to Arduino sketches.
 	unsigned long _clkX;
 // Read Functions:
 	byte readByte(byte registerAddress);
-	unsigned int readWord(byte registerAddress);
-	void readBytes(byte firstRegisterAddress, byte * destination, byte length);
+	uint16_t readWord(byte registerAddress);
+
+// Read Functions returning success or failure:
+	bool readBytes(byte firstRegisterAddress, byte * destination, byte length);
+
+	bool readByte(byte registerAddress, byte* value);
+	bool readWord(byte registerAddress, uint16_t* value);
 // Write functions, returning success or failure:
 	bool writeByte(byte registerAddress, byte writeValue);
-	bool writeWord(byte registerAddress, unsigned int writeValue);
+	bool writeWord(byte registerAddress, uint16_t writeValue);
 	bool writeBytes(byte firstRegisterAddress, byte * writeArray, byte length);
 // Helper functions:
 	// calculateLEDTRegister - Try to estimate an LED on/off duration register, 
@@ -143,7 +148,9 @@ public:
 //		This function returns a 1 if HIGH, 0 if LOW
 // -----------------------------------------------------------------------------
 	byte digitalRead(byte pin);
+  bool digitalRead(byte pin, bool* value);
 	byte readPin(byte pin); // Legacy - use digitalRead
+  bool readPin(const byte pin, bool* value);
 	
 // -----------------------------------------------------------------------------
 // ledDriverInit(byte pin, byte freq, bool log): This function initializes LED 
