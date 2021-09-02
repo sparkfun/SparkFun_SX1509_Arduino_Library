@@ -791,8 +791,8 @@ bool SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte lengt
 {
 	Wire.beginTransmission(deviceAddress);
 	Wire.write(firstRegisterAddress);
-	Wire.endTransmission();
-	bool result = (Wire.requestFrom(deviceAddress, length) == length);
+	uint8_t endResult = Wire.endTransmission();
+	bool result = (endResult == I2C_ERROR_OK) && (Wire.requestFrom(deviceAddress, length) == length);
 	
   if (result) {
   	unsigned int timeout = RECEIVE_TIMEOUT_VALUE * length;
@@ -820,8 +820,8 @@ bool SX1509::writeByte(byte registerAddress, byte writeValue)
 {
 	Wire.beginTransmission(deviceAddress);
   bool result = Wire.write(registerAddress) && Wire.write(writeValue);
-	Wire.endTransmission();	
-  return result;
+  uint8_t endResult = Wire.endTransmission();	
+  return result && (endResult == I2C_ERROR_OK);
 }
 
 // writeWord(byte registerAddress, ungisnged int writeValue)
@@ -836,8 +836,8 @@ bool SX1509::writeWord(byte registerAddress, uint16_t writeValue)
 	lsb = (writeValue & 0x00FF);
 	Wire.beginTransmission(deviceAddress);
   bool result = Wire.write(registerAddress) && Wire.write(msb) && Wire.write(lsb);
-	Wire.endTransmission();	
-  return result;
+	uint8_t endResult = Wire.endTransmission();	
+  return result && (endResult == I2C_ERROR_OK);
 }
 
 // writeBytes(byte firstRegisterAddress, byte * writeArray, byte length)
@@ -855,6 +855,6 @@ bool SX1509::writeBytes(byte firstRegisterAddress, byte * writeArray, byte lengt
   while (result && i < length) {
     result = Wire.write(writeArray[i++]);
   }
-	Wire.endTransmission();
-  return result;
+  uint8_t endResult = Wire.endTransmission();	
+  return result && (endResult == I2C_ERROR_OK);
 }
