@@ -727,8 +727,6 @@ unsigned int SX1509::readWord(byte registerAddress)
 //	- No return value.
 void SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte length)
 {
-	byte readValue;
-
 	_i2cPort->beginTransmission(deviceAddress);
 	_i2cPort->write(firstRegisterAddress);
 	_i2cPort->endTransmission();
