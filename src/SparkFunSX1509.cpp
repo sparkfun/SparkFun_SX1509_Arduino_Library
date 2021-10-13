@@ -691,13 +691,7 @@ byte SX1509::readByte(byte registerAddress)
 	_i2cPort->endTransmission();
 	_i2cPort->requestFrom(deviceAddress, (byte) 1);
 
-	while ((_i2cPort->available() < 1) && (timeout != 0))
-		timeout--;
-		
-	if (timeout == 0)
-		return 0;
-
-	readValue = _i2cPort->read();
+	readValue = Wire.read();
 
 	return readValue;
 }
@@ -718,12 +712,6 @@ unsigned int SX1509::readWord(byte registerAddress)
 	_i2cPort->endTransmission();
 	_i2cPort->requestFrom(deviceAddress, (byte) 2);
 
-	while ((_i2cPort->available() < 2) && (timeout != 0))
-		timeout--;
-		
-	if (timeout == 0)
-		return 0;
-	
 	msb = (_i2cPort->read() & 0x00FF) << 8;
 	lsb = (_i2cPort->read() & 0x00FF);
 	readValue = msb | lsb;
@@ -745,9 +733,6 @@ void SX1509::readBytes(byte firstRegisterAddress, byte * destination, byte lengt
 	_i2cPort->write(firstRegisterAddress);
 	_i2cPort->endTransmission();
 	_i2cPort->requestFrom(deviceAddress, length);
-	
-	while (_i2cPort->available() < length)
-		;
 	
 	for (int i=0; i<length; i++)
 	{
