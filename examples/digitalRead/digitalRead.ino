@@ -35,49 +35,54 @@ please buy us a round!
 Distributed as-is; no warranty is given.
 *************************************************************/
 
-#include <Wire.h> // Include the I2C library (required)
-#include <SparkFunSX1509.h> // Include SX1509 library
+#include <Wire.h>           // Include the I2C library (required)
+#include <SparkFunSX1509.h> //Click here for the library: http://librarymanager/All#SparkFun_SX1509
 
 // SX1509 I2C address (set by ADDR1 and ADDR0 (00 by default):
-const byte SX1509_ADDRESS = 0x3E;  // SX1509 I2C address
-SX1509 io; // Create an SX1509 object to be used throughout
+const byte SX1509_ADDRESS = 0x3E; // SX1509 I2C address
+SX1509 io;                        // Create an SX1509 object to be used throughout
 
 // SX1509 Pins:
 const byte SX1509_BUTTON_PIN = 0; // Active-low button
-const byte SX1509_INPUT_PIN = 8; // Floating or jumpered input
+const byte SX1509_INPUT_PIN = 8;  // Floating or jumpered input
 
-void setup() 
+void setup()
 {
   // Serial is used in this example to display the input value
   // of the SX1509_INPUT_PIN input:
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.println("SX1509 Example");
+
+  Wire.begin();
+
   // Call io.begin(<address>) to initialize the SX1509. If it
   // successfully communicates, it'll return 1.
-  if (!io.begin(SX1509_ADDRESS))
+  if (io.begin(SX1509_ADDRESS) == false)
   {
-    Serial.println("Failed to communicate.");
-    while (1) ;
+    Serial.println("Failed to communicate. Check wiring and address of SX1509.");
+    while (1)
+      ; // If we fail to communicate, loop forever.
   }
 
-  // use io.pinMode(<pin>, <mode>) to set input pins as either 
-  // INPUT or INPUT_PULLUP. Set up a floating (or jumpered to 
+  // use io.pinMode(<pin>, <mode>) to set input pins as either
+  // INPUT or INPUT_PULLUP. Set up a floating (or jumpered to
   // either GND or 3.3V) pin to an INPUT:
   io.pinMode(SX1509_INPUT_PIN, INPUT);
-  // Use a pull-up resistor on the button's input pin. When 
+  // Use a pull-up resistor on the button's input pin. When
   // the button is pressed, the pin will be read as LOW:
   io.pinMode(SX1509_BUTTON_PIN, INPUT_PULLUP);
 }
 
-void loop() 
+void loop()
 {
-  // use io.digitalRead(<pin>) to check if an SX1509 input 
+  // use io.digitalRead(<pin>) to check if an SX1509 input
   // pin is either HIGH or LOW.
   if (io.digitalRead(SX1509_BUTTON_PIN) == LOW)
   {
     // If the button is pressed (the pin reads LOW)
-	// Print the status of the other pin:
+    // Print the status of the other pin:
     Serial.print("SX1509_INPUT_PIN status: ");
-	// Read the pin to print either 0 or 1
+    // Read the pin to print either 0 or 1
     Serial.println(io.digitalRead(SX1509_INPUT_PIN));
   }
 }
