@@ -735,7 +735,7 @@ byte SX1509::readByte(byte registerAddress)
 	_i2cPort->endTransmission();
 	_i2cPort->requestFrom(deviceAddress, (byte)1);
 
-	readValue = Wire.read();
+	readValue = _i2cPort->read();
 
 	return readValue;
 }
