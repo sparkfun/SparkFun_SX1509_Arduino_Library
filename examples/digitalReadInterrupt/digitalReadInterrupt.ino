@@ -11,7 +11,7 @@ pressed, the SX1509 will generate an active-low interrupt,
 signalling to the Arduino that a button has been pressed.
 
 After uploading the sketch, open your serial monitor and 
-set it to 9600 baud.
+set it to 115200 baud.
 
 Hardware Hookup:
 	SX1509 Breakout ------ Arduino -------- Breadboard

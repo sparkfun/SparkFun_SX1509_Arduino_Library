@@ -11,7 +11,7 @@ matrix of button inputs.
 For this example, we'll wire the SX1509 up to a 12-pad keypad
   (https://www.sparkfun.com/products/8653).
 
-After uploading the sketch, open your serial monitor and set it to 9600 baud.
+After uploading the sketch, open your serial monitor and set it to 115200 baud.
 
 Hardware Hookup:
 	SX1509 Breakout ------ Arduino -------- Keypad Pin

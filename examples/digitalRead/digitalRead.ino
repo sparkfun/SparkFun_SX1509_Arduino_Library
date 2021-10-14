@@ -12,7 +12,7 @@ INPUT_PULLUP input, then whenever the button read's LOW, we'll
 read the state of another INPUT pin.
 
 After uploading the sketch, open your serial monitor and set 
-it to 9600 baud.
+it to 115200 baud.
 
 Hardware Hookup:
 	SX1509 Breakout ------ Arduino -------- Breadboard
