@@ -801,15 +801,6 @@ bool SX1509::readBytes(byte firstRegisterAddress, byte *destination, byte length
 
 	if (result)
 	{
-		unsigned int timeout = RECEIVE_TIMEOUT_VALUE * length;
-		while ((_i2cPort->available() < length) && (timeout-- != 0))
-			;
-
-		if (timeout == 0)
-		{
-			return false;
-		}
-
 		for (int i = 0; i < length; i++)
 		{
 			destination[i] = _i2cPort->read();
