@@ -27,6 +27,10 @@ Distributed as-is; no warranty is given.
 #ifndef SparkFunSX1509_H
 #define SparkFunSX1509_H
 
+#ifndef I2C_ERROR_OK
+#define I2C_ERROR_OK 0
+#endif
+
 #define RECEIVE_TIMEOUT_VALUE 1000 // Timeout for I2C receive
 
 // These are used for setting LED driver to linear or log mode:
@@ -71,10 +75,10 @@ private: // These private functions are not available to Arduino sketches.
 	// Helper functions:
 	// calculateLEDTRegister - Try to estimate an LED on/off duration register,
 	// given the number of milliseconds and LED clock frequency.
-	uint8_t calculateLEDTRegister(int ms);
+	uint8_t calculateLEDTRegister(uint8_t ms);
 	// calculateSlopeRegister - Try to estimate an LED rise/fall duration
 	// register, given the number of milliseconds and LED clock frequency.
-	uint8_t calculateSlopeRegister(int ms, uint8_t onIntensity, uint8_t offIntensity);
+	uint8_t calculateSlopeRegister(uint8_t ms, uint8_t onIntensity, uint8_t offIntensity);
 
 public:
 	// -----------------------------------------------------------------------------
@@ -268,7 +272,7 @@ public:
 	//  	  Should be a millisecond duration between 0 and 64.
 	//   	  Possible values are 0 (0.5), 1, 2, 4, 8, 16, 32, 64.
 	// -----------------------------------------------------------------------------
-	void keypad(uint8_t rows, uint8_t columns, unsigned int sleepTime = 0, uint8_t scanTime = 1, uint8_t debounceTime = 0);
+	void keypad(uint8_t rows, uint8_t columns, uint16_t sleepTime = 0, uint8_t scanTime = 1, uint8_t debounceTime = 0);
 
 	// -----------------------------------------------------------------------------
 	// readKeypad(): This function returns a 16-bit value containing the status of
@@ -280,36 +284,36 @@ public:
 	//		button in that row or column is being pressed. As such, at least two
 	//		bits should be set.
 	// -----------------------------------------------------------------------------
-	unsigned int readKeypad();
-	unsigned int readKeyData(); // Legacy: use readKeypad();
+	uint16_t readKeypad();
+	uint16_t readKeyData(); // Legacy: use readKeypad();
 
 	// -----------------------------------------------------------------------------
 	// getRow(): This function returns the first active row from the return value of
 	//  	readKeypad().
 	//
 	//	Input:
-	//      - keyData: Should be the unsigned int value returned from readKeypad().
+	//      - keyData: Should be the uint16_t value returned from readKeypad().
 	//	Output:
 	//		A 16-bit value is returned. The lower 8 bits represent the up-to 8 rows,
 	//		while the MSB represents the up-to 8 columns. Bit-values of 1 indicate a
 	//		button in that row or column is being pressed. As such, at least two
 	//		bits should be set.
 	// -----------------------------------------------------------------------------
-	uint8_t getRow(unsigned int keyData);
+	uint8_t getRow(uint16_t keyData);
 
 	// -----------------------------------------------------------------------------
 	// getCol(): This function returns the first active column from the return value of
 	//  	readKeypad().
 	//
 	//	Input:
-	//      - keyData: Should be the unsigned int value returned from readKeypad().
+	//      - keyData: Should be the uint16_t value returned from readKeypad().
 	//	Output:
 	//		A 16-bit value is returned. The lower 8 bits represent the up-to 8 rows,
 	//		while the MSB represents the up-to 8 columns. Bit-values of 1 indicate a
 	//		button in that row or column is being pressed. As such, at least two
 	//		bits should be set.
 	// -----------------------------------------------------------------------------
-	uint8_t getCol(unsigned int keyData);
+	uint8_t getCol(uint16_t keyData);
 
 	// -----------------------------------------------------------------------------
 	// sync(void): this function resets the PWM/Blink/Fade counters, syncing any
@@ -392,7 +396,7 @@ public:
 	void enableInterrupt(uint8_t pin, uint8_t riseFall);
 
 	// -----------------------------------------------------------------------------
-	// interruptSource(void): Returns an unsigned int representing which pin caused
+	// interruptSource(void): Returns an uint16_t representing which pin caused
 	//		an interrupt.
 	//
 	//	Output: 16-bit value, with a single bit set representing the pin(s) that
@@ -402,7 +406,7 @@ public:
 	//  	- clear: boolean commanding whether the interrupt should be cleared
 	//  	  after reading or not.
 	// -----------------------------------------------------------------------------
-	unsigned int interruptSource(bool clear = true);
+	uint16_t interruptSource(bool clear = true);
 
 	// -----------------------------------------------------------------------------
 	// checkInterrupt(void): Checks if a single pin generated an interrupt.
@@ -411,7 +415,7 @@ public:
 	//  Input:
 	//  	- pin: Pin to be checked for generating an input.
 	// -----------------------------------------------------------------------------
-	bool checkInterrupt(int pin);
+	bool checkInterrupt(uint8_t pin);
 
 	// -----------------------------------------------------------------------------
 	// configClock(uint8_t oscSource, uint8_t oscPinFunction, uint8_t oscFreqOut, uint8_t oscDivider)
