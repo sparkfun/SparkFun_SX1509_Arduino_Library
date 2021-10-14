@@ -849,10 +849,7 @@ bool SX1509::writeBytes(uint8_t firstRegisterAddress, uint8_t *writeArray, uint8
 	_i2cPort->beginTransmission(deviceAddress);
 	bool result = _i2cPort->write(firstRegisterAddress);
 	int i = 0;
-	while (result && i < length)
-	{
-		result = _i2cPort->write(writeArray[i++]);
-	}
+	result = _i2cPort->write(writeArray, length);
 	uint8_t endResult = _i2cPort->endTransmission();
 	return result && (endResult == I2C_ERROR_OK);
 }
