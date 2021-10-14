@@ -57,14 +57,19 @@ private: // These private functions are not available to Arduino sketches.
 	unsigned long _clkX;
 	// Read Functions:
 	byte readByte(byte registerAddress);
-	unsigned int readWord(byte registerAddress);
-	void readBytes(byte firstRegisterAddress, byte *destination, byte length);
-	// Write functions:
-	void writeByte(byte registerAddress, byte writeValue);
-	void writeWord(byte registerAddress, unsigned int writeValue);
-	void writeBytes(byte firstRegisterAddress, byte *writeArray, byte length);
-	// Helper functions:
-	// calculateLEDTRegister - Try to estimate an LED on/off duration register,
+	uint16_t readWord(byte registerAddress);
+
+// Read Functions returning success or failure:
+	bool readBytes(byte firstRegisterAddress, byte * destination, byte length);
+
+	bool readByte(byte registerAddress, byte* value);
+	bool readWord(byte registerAddress, uint16_t* value);
+// Write functions, returning success or failure:
+	bool writeByte(byte registerAddress, byte writeValue);
+	bool writeWord(byte registerAddress, uint16_t writeValue);
+	bool writeBytes(byte firstRegisterAddress, byte * writeArray, byte length);
+// Helper functions:
+	// calculateLEDTRegister - Try to estimate an LED on/off duration register, 
 	// given the number of milliseconds and LED clock frequency.
 	byte calculateLEDTRegister(int ms);
 	// calculateSlopeRegister - Try to estimate an LED rise/fall duration
@@ -110,30 +115,30 @@ public:
 	// -----------------------------------------------------------------------------
 	void reset(bool hardware);
 
-	// -----------------------------------------------------------------------------
-	// pinMode(byte pin, byte inOut): This function sets one of the SX1509's 16
-	//		outputs to either an INPUT or OUTPUT.
-	//
-	//	Inputs:
-	//	 	- pin: should be a value between 0 and 15
-	//	 	- inOut: The Arduino INPUT and OUTPUT constants should be used for the
-	//		 inOut parameter. They do what they say!
-	// -----------------------------------------------------------------------------
-	void pinMode(byte pin, byte inOut);
-	void pinDir(byte pin, byte inOut); // Legacy - use pinMode
-
-	// -----------------------------------------------------------------------------
-	// digitalWrite(byte pin, byte highLow): This function writes a pin to either high
-	//		or low if it's configured as an OUTPUT. If the pin is configured as an
-	//		INPUT, this method will activate either the PULL-UP	or PULL-DOWN
-	//		resistor (HIGH or LOW respectively).
-	//
-	//	Inputs:
-	//		- pin: The SX1509 pin number. Should be a value between 0 and 15.
-	//		- highLow: should be Arduino's defined HIGH or LOW constants.
-	// -----------------------------------------------------------------------------
-	void digitalWrite(byte pin, byte highLow);
-	void writePin(byte pin, byte highLow); // Legacy - use digitalWrite
+// -----------------------------------------------------------------------------
+// pinMode(byte pin, byte inOut): This function sets one of the SX1509's 16 
+//		outputs to either an INPUT or OUTPUT.
+//
+//	Inputs:
+//	 	- pin: should be a value between 0 and 15
+//	 	- inOut: The Arduino INPUT and OUTPUT constants should be used for the 
+//		 inOut parameter. They do what they say!
+// -----------------------------------------------------------------------------
+	void pinMode(byte pin, byte inOut, byte initialLevel = HIGH);
+	void pinDir(byte pin, byte inOut, byte initialLevel = HIGH); // Legacy - use pinMode
+	
+// -----------------------------------------------------------------------------
+// digitalWrite(byte pin, byte highLow): This function writes a pin to either high 
+//		or low if it's configured as an OUTPUT. If the pin is configured as an 
+//		INPUT, this method will activate either the PULL-UP	or PULL-DOWN
+//		resistor (HIGH or LOW respectively).
+//
+//	Inputs:
+//		- pin: The SX1509 pin number. Should be a value between 0 and 15.
+//		- highLow: should be Arduino's defined HIGH or LOW constants.
+// -----------------------------------------------------------------------------
+	bool digitalWrite(byte pin, byte highLow); 
+	bool writePin(byte pin, byte highLow); // Legacy - use digitalWrite
 
 	// -----------------------------------------------------------------------------
 	// digitalRead(byte pin): This function reads the HIGH/LOW status of a pin.
@@ -145,21 +150,23 @@ public:
 	//		This function returns a 1 if HIGH, 0 if LOW
 	// -----------------------------------------------------------------------------
 	byte digitalRead(byte pin);
+  bool digitalRead(byte pin, bool* value);
 	byte readPin(byte pin); // Legacy - use digitalRead
-
-	// -----------------------------------------------------------------------------
-	// ledDriverInit(byte pin, byte freq, bool log): This function initializes LED
-	//		driving on a pin. It must be called if you want to use the pwm or blink
-	//		functions on that pin.
-	//
-	//	Inputs:
-	//		- pin: The SX1509 pin connected to an LED. Should be 0-15.
-	//   	- freq: Sets LED clock frequency divider.
-	//		- log: selects either linear or logarithmic mode on the LED drivers
-	//			- log defaults to 0, linear mode
-	//			- currently log sets both bank A and B to the same mode
-	//	Note: this function automatically decides to use the internal 2MHz osc.
-	// -----------------------------------------------------------------------------
+  bool readPin(const byte pin, bool* value);
+	
+// -----------------------------------------------------------------------------
+// ledDriverInit(byte pin, byte freq, bool log): This function initializes LED 
+//		driving on a pin. It must be called if you want to use the pwm or blink 
+//		functions on that pin.
+//	
+//	Inputs:
+//		- pin: The SX1509 pin connected to an LED. Should be 0-15.
+//   	- freq: Sets LED clock frequency divider.
+//		- log: selects either linear or logarithmic mode on the LED drivers
+//			- log defaults to 0, linear mode
+//			- currently log sets both bank A and B to the same mode
+//	Note: this function automatically decides to use the internal 2MHz osc.
+// -----------------------------------------------------------------------------
 	void ledDriverInit(byte pin, byte freq = 1, bool log = false);
 
 	// -----------------------------------------------------------------------------
