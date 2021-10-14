@@ -30,22 +30,29 @@ please buy us a round!
 Distributed as-is; no warranty is given.
 *************************************************************/
 
-#include <Wire.h> // Include the I2C library (required)
-#include <SparkFunSX1509.h> // Include SX1509 library
+#include <Wire.h>           // Include the I2C library (required)
+#include <SparkFunSX1509.h> //Click here for the library: http://librarymanager/All#SparkFun_SX1509
 
 // SX1509 I2C address (set by ADDR1 and ADDR0 (00 by default):
-const byte SX1509_ADDRESS = 0x3E;  // SX1509 I2C address
-SX1509 io; // Create an SX1509 object to be used throughout
+const byte SX1509_ADDRESS = 0x3E; // SX1509 I2C address
+SX1509 io;                        // Create an SX1509 object to be used throughout
 
-void setup() 
+void setup()
 {
+  Serial.begin(115200);
+  Serial.println("SX1509 Example");
+
+  Wire.begin();
+
   // Call io.begin(<address>) to initialize the SX1509. If it
   // successfully communicates, it'll return 1.
-  if (!io.begin(SX1509_ADDRESS))
+  if (io.begin(SX1509_ADDRESS) == false)
   {
-    while (1) ; // If we fail to communicate, loop forever.
+    Serial.println("Failed to communicate. Check wiring and address of SX1509.");
+    while (1)
+      ; // If we fail to communicate, loop forever.
   }
-  
+
   // Configure clock:
   // - INTERNAL_CLOCK_2MHZ: Set clock to internal 2MHz
   // - 2: Set LED clock to divide by 2^(2-1) (2)
@@ -58,6 +65,6 @@ void setup()
   io.clock(INTERNAL_CLOCK_2MHZ, 2, OUTPUT, outputFreq);
 }
 
-void loop() 
+void loop()
 {
 }

@@ -39,41 +39,45 @@ please buy us a round!
 Distributed as-is; no warranty is given.
 *************************************************************/
 
-#include <Wire.h> // Include the I2C library (required)
-#include <SparkFunSX1509.h> // Include SX1509 library
+#include <Wire.h>           // Include the I2C library (required)
+#include <SparkFunSX1509.h> //Click here for the library: http://librarymanager/All#SparkFun_SX1509
 
 // SX1509 I2C address (set by ADDR1 and ADDR0 (00 by default):
-const byte SX1509_ADDRESS = 0x3E;  // SX1509 I2C address
-SX1509 io; // Create an SX1509 object to be used throughout
+const byte SX1509_ADDRESS = 0x3E; // SX1509 I2C address
+SX1509 io;                        // Create an SX1509 object to be used throughout
 
 #define KEY_ROWS 4 // Number of rows in the keypad matrix
 #define KEY_COLS 3 // Number of columns in the keypad matrix
 
 // keyMap maps row/column combinations to characters:
 char keyMap[KEY_ROWS][KEY_COLS] = {
-{ '1', '2', '3'},
-{ '4', '5', '6'},
-{ '7', '8', '9'},
-{ '*', '0', '#'}};
+    {'1', '2', '3'},
+    {'4', '5', '6'},
+    {'7', '8', '9'},
+    {'*', '0', '#'}};
 
-void setup() 
+void setup()
 {
-  // Serial is used to display the keypad button pressed:
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.println("SX1509 Example");
+
+  Wire.begin();
+
   // Call io.begin(<address>) to initialize the SX1509. If it
   // successfully communicates, it'll return 1.
-  if (!io.begin(SX1509_ADDRESS))
+  if (io.begin(SX1509_ADDRESS) == false)
   {
-    Serial.println("Failed to communicate.");
-    while (1) ; // If we fail to communicate, loop forever.
+    Serial.println("Failed to communicate. Check wiring and address of SX1509.");
+    while (1)
+      ; // If we fail to communicate, loop forever.
   }
-  
+
   // To initialize the keypad, call io.keypad(<rows>, <cols>)
   // You can also define the duration of inactivity before the
   // keypad engine sleeps, time spent scanning each row, and
   // the debounce time per button.
-  
-  // After a set number of milliseconds, the keypad engine 
+
+  // After a set number of milliseconds, the keypad engine
   // will go into a low-current sleep mode.
   // Sleep time range: 128 ms - 8192 ms (powers of 2) 0=OFF
   unsigned int sleepTime = 256;
@@ -88,13 +92,13 @@ void setup()
   // Note: Scan time must be greater than debounce time!
   // Take all of those values to set up the keypad engine:
   io.keypad(KEY_ROWS, KEY_COLS, sleepTime, scanTime, debounceTime);
-  
+
   // Note: we don't get to pick which pins the SX1509 connects
-  // to each row/column. They go up sequetially on pins 0-7 
+  // to each row/column. They go up sequetially on pins 0-7
   // (rows), and 8-15 (cols).
 }
 
-void loop() 
+void loop()
 {
   // Use io.readKeypad() to check if any keys have been pressed:
   unsigned int keyData = io.readKeypad();
@@ -104,12 +108,12 @@ void loop()
   if (keyData != 0) // If a key was pressed:
   {
     // Use io.getRow(<readKeypad>) and io.getCol(<readKeypad>)
-	// to find the active row and columns:
+    // to find the active row and columns:
     byte row = io.getRow(keyData);
     byte col = io.getCol(keyData);
-	
-	// Once you've found out the active row/col, put them in 
-	// keyMap to get the character pressed.
+
+    // Once you've found out the active row/col, put them in
+    // keyMap to get the character pressed.
     char key = keyMap[row][col];
     Serial.println("Row: " + String(row));
     Serial.println("Col: " + String(col));
