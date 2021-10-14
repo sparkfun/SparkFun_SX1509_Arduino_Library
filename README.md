@@ -7,6 +7,17 @@ SparkFun SX1509 IO Expander Breakout Arduino Library
 
 Arduino library for the SX1509 16-I/O expander. Capable of driving LEDs - with blink, and breathe functions - or monitoring up to 64 buttons in an 8x8 array.
 
+Are you low on I/O? No problem! The SX1509 Breakout is a 16-channel GPIO expander with an I2C interface – that means with just two wires, your microcontroller can interface with 16 fully configurable digital input/output pins. But the SX1509 can do so much more than just simple digital pin control. It can produce PWM signals, so you can dim LEDs. It can be set to blink or even breathe pins at varying rates. This breakout is similar to a multiplexer or "mux," in that it allows you to get more IO from less pins. And, with a built-in keypad engine, it can interface with up to 64 buttons set up in an 8x8 matrix.
+
+Two headers at the top and bottom of the breakout board function as the input and control headers to the board. This is where you can supply power to the SX1509, and where your I2C signals – SDA and SCL – will terminate. GPIO and power buses are broken out in every-which direction, and configurable jumpers cover most of the rest of the board.
+
+Since the I/O banks can operate between 1.2V and 3.6V (5.5V tolerant) independent of both the core and each other, this device can also work as a level-shifter. The SX1509 breakout makes it easy to prototype so you can add more I/O onto your Arduino or I/O limited controller. We've even spun up an Arduino Library to get you started!
+
+Please be aware that v3 of the library breaks previous version compatiblity on a few things:
+
+* Wire.begin() must be called explicitly within the Arduino sketch before io.begin() is called. This may break code that does not have Wire.begin().
+* io.begin() has been expanded to include io.begin(deviceAddress, wirePort, resetPin). This may break code where resetPin was the 2nd argument.
+
 Repository Contents
 -------------------
 
