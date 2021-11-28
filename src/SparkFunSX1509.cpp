@@ -750,7 +750,7 @@ uint16_t SX1509::readWord(uint8_t registerAddress)
 	uint16_t readValue;
 	uint16_t msb, lsb;
 	// Commented the line as variable seems unused; 
-	uint16_t timeout = RECEIVE_TIMEOUT_VALUE * 2;
+	//uint16_t timeout = RECEIVE_TIMEOUT_VALUE * 2;
 
 	_i2cPort->beginTransmission(deviceAddress);
 	_i2cPort->write(registerAddress);
