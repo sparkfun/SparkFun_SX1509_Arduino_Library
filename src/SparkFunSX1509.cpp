@@ -544,7 +544,7 @@ void SX1509::debounceTime(uint8_t time)
 	uint8_t configValue = 0;
 	// We'll check for the highest set bit position,
 	// and use that for debounceConfig
-	for (uint8_t i = 7; i >= 0; i--)
+	for (int8_t i = 7; i >= 0; i--)
 	{
 		if (time & (1 << i))
 		{
