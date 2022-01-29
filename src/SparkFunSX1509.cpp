@@ -286,7 +286,6 @@ void SX1509::ledDriverInit(uint8_t pin, uint8_t freq /*= 1*/, bool log /*= false
 	{
 		// _clkX = 2000000.0 / (1 << (1 - 1)); // Update private clock variable
 		_clkX = 2000000.0;
-		clock(INTERNAL_CLOCK_2MHZ);				// enable internal 2MHz clock 
 
 		// uint8_t freq = (1 & 0x07) << 4; // freq should only be 3 bits from 6:4
 		// tempByte |= freq;
