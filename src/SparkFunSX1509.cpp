@@ -284,11 +284,16 @@ void SX1509::ledDriverInit(uint8_t pin, uint8_t freq /*= 1*/, bool log /*= false
 	// Use configClock to setup the clock divder
 	if (_clkX == 0) // Make clckX non-zero
 	{
-		_clkX = 2000000.0 / (1 << (1 - 1)); // Update private clock variable
+		// _clkX = 2000000.0 / (1 << (1 - 1)); // Update private clock variable
+		_clkX = 2000000.0;
 
-		uint8_t freq = (1 & 0x07) << 4; // freq should only be 3 bits from 6:4
-		tempByte |= freq;
+		// uint8_t freq = (1 & 0x07) << 4; // freq should only be 3 bits from 6:4
+		// tempByte |= freq;
 	}
+
+	freq = (freq & 0x7) << 4;	// mask only 3 bits and shift to bit position 6:4 
+	tempByte |= freq;
+
 	writeByte(REG_MISC, tempByte);
 
 	// Enable LED driver operation (REG_LED_DRIVER_ENABLE)
