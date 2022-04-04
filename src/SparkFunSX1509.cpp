@@ -93,10 +93,10 @@ void SX1509::reset(bool hardware)
 			writeByte(REG_MISC, regMisc);
 		}
 		// Reset the SX1509, the pin is active low
-		pinMode(pinReset, OUTPUT);	  // set reset pin as output
-		digitalWrite(pinReset, LOW);  // pull reset pin low
+		::pinMode(pinReset, OUTPUT);	  // set reset pin as output
+		::digitalWrite(pinReset, LOW);  // pull reset pin low
 		delay(1);					  // Wait for the pin to settle
-		digitalWrite(pinReset, HIGH); // pull reset pin back high
+		::digitalWrite(pinReset, HIGH); // pull reset pin back high
 	}
 	else
 	{
@@ -506,10 +506,10 @@ void SX1509::sync(void)
 	}
 
 	// Toggle nReset pin to sync LED timers
-	pinMode(pinReset, OUTPUT);	  // set reset pin as output
-	digitalWrite(pinReset, LOW);  // pull reset pin low
+	::pinMode(pinReset, OUTPUT);	  // set reset pin as output
+	::digitalWrite(pinReset, LOW);  // pull reset pin low
 	delay(1);					  // Wait for the pin to settle
-	digitalWrite(pinReset, HIGH); // pull reset pin back high
+	::digitalWrite(pinReset, HIGH); // pull reset pin back high
 
 	// Return nReset to POR functionality
 	writeByte(REG_MISC, (regMisc & ~(1 << 2)));
