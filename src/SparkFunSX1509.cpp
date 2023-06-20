@@ -676,7 +676,7 @@ void SX1509::configClock(uint8_t oscSource /*= 2*/, uint8_t oscPinFunction /*= 0
 	writeByte(REG_MISC, regMisc);
 }
 
-uint8_t SX1509::calculateLEDTRegister(uint8_t ms)
+uint8_t SX1509::calculateLEDTRegister(unsigned long ms)
 {
 	uint8_t regOn1, regOn2;
 	float timeOn1, timeOn2;
@@ -698,7 +698,7 @@ uint8_t SX1509::calculateLEDTRegister(uint8_t ms)
 		return regOn2;
 }
 
-uint8_t SX1509::calculateSlopeRegister(uint8_t ms, uint8_t onIntensity, uint8_t offIntensity)
+uint8_t SX1509::calculateSlopeRegister(unsigned long ms, uint8_t onIntensity, uint8_t offIntensity)
 {
 	uint16_t regSlope1, regSlope2;
 	float regTime1, regTime2;
