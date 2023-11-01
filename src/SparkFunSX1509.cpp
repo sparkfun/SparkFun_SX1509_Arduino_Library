@@ -57,11 +57,12 @@ uint8_t SX1509::init(void)
 	//Wire.begin();
 
 	// If the reset pin is connected
-	if (pinReset != 255)
+	if (pinReset != 255) {
 		reset(1);
-	else
+	}
+	else {
 		reset(0);
-
+	}
 	// Communication test. We'll read from two registers with different
 	// default values to verify communication.
 	uint16_t testRegisters = 0;
@@ -93,7 +94,7 @@ void SX1509::reset(bool hardware)
 			writeByte(REG_MISC, regMisc);
 		}
 		// Reset the SX1509, the pin is active low
-		::pinMode(pinReset, OUTPUT);	  // set reset pin as output
+		::pinMode(pinReset, SX_OUTPUT);	  // set reset pin as output
 		::digitalWrite(pinReset, LOW);  // pull reset pin low
 		delay(1);					  // Wait for the pin to settle
 		::digitalWrite(pinReset, HIGH); // pull reset pin back high
@@ -112,7 +113,7 @@ void SX1509::pinDir(uint8_t pin, uint8_t inOut, uint8_t initialLevel)
 	//	0: IO is configured as an output
 	//	1: IO is configured as an input
 	uint8_t modeBit;
-	if ((inOut == OUTPUT) || (inOut == ANALOG_OUTPUT))
+	if ((inOut == SX_OUTPUT) || (inOut == SX_ANALOG_OUTPUT))
 	{
 		uint16_t tempRegData = readWord(REG_DATA_B);
 		if (initialLevel == LOW)
@@ -128,18 +129,19 @@ void SX1509::pinDir(uint8_t pin, uint8_t inOut, uint8_t initialLevel)
 	}
 
 	uint16_t tempRegDir = readWord(REG_DIR_B);
-	if (modeBit)
+	if (modeBit) {
 		tempRegDir |= (1 << pin);
-	else
+	}
+	else {
 		tempRegDir &= ~(1 << pin);
-
+	}
 	writeWord(REG_DIR_B, tempRegDir);
 
 	// If INPUT_PULLUP was called, set up the pullup too:
-	if (inOut == INPUT_PULLUP)
+	if (inOut == INPUT_PULLUP) {
 		writePin(pin, HIGH);
-
-	if (inOut == ANALOG_OUTPUT)
+	}
+	if (inOut == SX_ANALOG_OUTPUT)
 	{
 		ledDriverInit(pin);
 	}
@@ -189,7 +191,7 @@ bool SX1509::digitalWrite(uint8_t pin, uint8_t highLow)
 	return writePin(pin, highLow);
 }
 
-uint8_t SX1509::readPin(uint8_t pin)
+bool SX1509::readPin(uint8_t pin)
 {
 	uint16_t tempRegDir = readWord(REG_DIR_B);
 
@@ -201,7 +203,7 @@ uint8_t SX1509::readPin(uint8_t pin)
 	}
 	else
 	{
-		// log_d("Pin %d not INPUT, REG_DIR_B: %d", pin, tempRegDir);
+		log_w("SX1509", "Pin %d not INPUT, REG_DIR_B: %d", pin, tempRegDir);
 	}
 
 	return 0;
@@ -230,7 +232,7 @@ bool SX1509::readPin(const uint8_t pin, bool *value)
 	return false;
 }
 
-uint8_t SX1509::digitalRead(uint8_t pin)
+bool SX1509::digitalRead(uint8_t pin)
 {
 	return readPin(pin);
 }
@@ -281,20 +283,16 @@ void SX1509::ledDriverInit(uint8_t pin, uint8_t freq /*= 1*/, bool log /*= false
 		tempByte &= ~(1 << 3); // set linear mode bank A
 	}
 
-	// Use configClock to setup the clock divder
-	if (_clkX == 0) // Make clckX non-zero
+	// Use configClock to setup the clock divider
+	if (_clkX == 0) // Check if Clock has already been set-up; Make clckX non-zero 
 	{
 		// _clkX = 2000000.0 / (1 << (1 - 1)); // Update private clock variable
 		_clkX = 2000000.0;
+		freq = (freq & 0x7) << 4;	// mask only 3 bits and shift to bit position 6:4 
+		tempByte |= freq;
 
-		// uint8_t freq = (1 & 0x07) << 4; // freq should only be 3 bits from 6:4
-		// tempByte |= freq;
+		writeByte(REG_MISC, tempByte);
 	}
-
-	freq = (freq & 0x7) << 4;	// mask only 3 bits and shift to bit position 6:4 
-	tempByte |= freq;
-
-	writeByte(REG_MISC, tempByte);
 
 	// Enable LED driver operation (REG_LED_DRIVER_ENABLE)
 	tempWord = readWord(REG_LED_DRIVER_ENABLE_B);
@@ -335,8 +333,8 @@ void SX1509::breathe(uint8_t pin, unsigned long tOn, unsigned long tOff, unsigne
 	uint8_t onReg = calculateLEDTRegister(tOn);
 	uint8_t offReg = calculateLEDTRegister(tOff);
 
-	uint8_t riseTime = calculateSlopeRegister(rise, onInt, offInt);
-	uint8_t fallTime = calculateSlopeRegister(fall, onInt, offInt);
+	uint16_t riseTime = calculateSlopeRegister(rise, onInt, offInt);
+	uint16_t fallTime = calculateSlopeRegister(fall, onInt, offInt);
 
 	setupBlink(pin, onReg, offReg, onInt, offInt, riseTime, fallTime, log);
 }
@@ -506,7 +504,7 @@ void SX1509::sync(void)
 	}
 
 	// Toggle nReset pin to sync LED timers
-	::pinMode(pinReset, OUTPUT);	  // set reset pin as output
+	::pinMode(pinReset, SX_OUTPUT);	  // set reset pin as output
 	::digitalWrite(pinReset, LOW);  // pull reset pin low
 	delay(1);					  // Wait for the pin to settle
 	::digitalWrite(pinReset, HIGH); // pull reset pin back high
@@ -596,13 +594,13 @@ void SX1509::enableInterrupt(uint8_t pin, uint8_t riseFall)
 	uint8_t sensitivity = 0;
 	switch (riseFall)
 	{
-	case CHANGE:
+	case SX_CHANGE:
 		sensitivity = 0b11;
 		break;
-	case FALLING:
+	case SX_FALLING:
 		sensitivity = 0b10;
 		break;
-	case RISING:
+	case SX_RISING:
 		sensitivity = 0b01;
 		break;
 	}
@@ -676,6 +674,7 @@ void SX1509::configClock(uint8_t oscSource /*= 2*/, uint8_t oscPinFunction /*= 0
 	writeByte(REG_MISC, regMisc);
 }
 
+//TODO CHECk
 uint8_t SX1509::calculateLEDTRegister(unsigned long ms)
 {
 	uint8_t regOn1, regOn2;
@@ -698,7 +697,8 @@ uint8_t SX1509::calculateLEDTRegister(unsigned long ms)
 		return regOn2;
 }
 
-uint8_t SX1509::calculateSlopeRegister(unsigned long ms, uint8_t onIntensity, uint8_t offIntensity)
+// Changed return from uint8_t to uint16_t
+uint16_t SX1509::calculateSlopeRegister(unsigned long ms, uint8_t onIntensity, uint8_t offIntensity)
 {
 	uint16_t regSlope1, regSlope2;
 	float regTime1, regTime2;
@@ -785,8 +785,7 @@ bool SX1509::readWord(uint8_t registerAddress, uint16_t *value)
 	uint8_t dest[2];
 	if (readBytes(registerAddress, dest, 2))
 	{
-		value[0] = dest[1];
-		value[1] = dest[0];
+		value[0] = (dest[1] << 8) + dest[0];
 		return true;
 	}
 	return false;
