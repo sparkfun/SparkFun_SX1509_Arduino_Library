@@ -83,7 +83,7 @@ private: // These private functions are not available to Arduino sketches.
 	uint8_t calculateLEDTRegister(unsigned long ms);
 	// calculateSlopeRegister - Try to estimate an LED rise/fall duration
 	// register, given the number of milliseconds and LED clock frequency.
-	uint8_t calculateSlopeRegister(unsigned long ms, uint8_t onIntensity, uint8_t offIntensity);
+	uint16_t calculateSlopeRegister(unsigned long ms, uint8_t onIntensity, uint8_t offIntensity);
 
 public:
 	// -----------------------------------------------------------------------------
