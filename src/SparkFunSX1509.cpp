@@ -785,8 +785,7 @@ bool SX1509::readWord(uint8_t registerAddress, uint16_t *value)
 	uint8_t dest[2];
 	if (readBytes(registerAddress, dest, 2))
 	{
-		value[0] = dest[1];
-		value[1] = dest[0];
+		*value = dest[1] | dest[0] << 8;
 		return true;
 	}
 	return false;
