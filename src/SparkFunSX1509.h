@@ -44,7 +44,12 @@ Distributed as-is; no warranty is given.
 #define SOFTWARE_RESET 0
 #define HARDWARE_RESET 1
 
-#define ANALOG_OUTPUT 0x3 // To set a pin mode for PWM output
+#define SX_ANALOG_OUTPUT 0x3 // To set a pin mode for PWM output
+#define SX_OUTPUT 0x1
+
+#define SX_CHANGE 1
+#define SX_FALLING 2
+#define SX_RISING 3
 
 class SX1509
 {
@@ -78,7 +83,7 @@ private: // These private functions are not available to Arduino sketches.
 	uint8_t calculateLEDTRegister(unsigned long ms);
 	// calculateSlopeRegister - Try to estimate an LED rise/fall duration
 	// register, given the number of milliseconds and LED clock frequency.
-	uint8_t calculateSlopeRegister(unsigned long ms, uint8_t onIntensity, uint8_t offIntensity);
+	uint16_t calculateSlopeRegister(unsigned long ms, uint8_t onIntensity, uint8_t offIntensity);
 
 public:
 	// -----------------------------------------------------------------------------
@@ -152,9 +157,9 @@ public:
 	//  Outputs:
 	//		This function returns a 1 if HIGH, 0 if LOW
 	// -----------------------------------------------------------------------------
-	uint8_t digitalRead(uint8_t pin);
+	bool digitalRead(uint8_t pin);
 	bool digitalRead(uint8_t pin, bool *value);
-	uint8_t readPin(uint8_t pin); // Legacy - use digitalRead
+	bool readPin(uint8_t pin); // Legacy - use digitalRead
 	bool readPin(const uint8_t pin, bool *value);
 
 	// -----------------------------------------------------------------------------
